@@ -119,6 +119,15 @@ const Workspace = {
     
     const el = block.render();
     this.container.appendChild(el);
+
+    el.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (window.App) {
+        window.App.activeBlock = block;
+        window.App.openParamModal(block);
+      }
+    });
+
     return block;
   },
 

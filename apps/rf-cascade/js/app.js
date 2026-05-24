@@ -383,19 +383,20 @@ const App = {
 
   calculateCascade() {
     const blocks = window.Workspace.blocks;
+    const simBlocks = blocks.filter(b => b.type !== 'Annotation');
     const wires = window.Workspace.wires;
     const display = document.getElementById('results-display');
     
     // Clear previous calculations
     blocks.forEach(b => b.clearCalculations());
 
-    if (blocks.length === 0) {
+    if (simBlocks.length === 0) {
       display.textContent = 'Workspace is empty.';
       return;
     }
 
     // Find start blocks (blocks with no incoming wires)
-    let startBlocks = blocks.filter(b => !wires.find(w => w.targetId === b.id));
+    let startBlocks = simBlocks.filter(b => !wires.find(w => w.targetId === b.id));
 
     if (startBlocks.length === 0) {
       display.textContent = 'Error: No starting block found (Signal Source or Antenna with no inputs).';
@@ -408,7 +409,7 @@ const App = {
     let processed = new Set();
     
     const inputSignals = {};
-    blocks.forEach(b => {
+    simBlocks.forEach(b => {
       inputSignals[b.id] = {};
     });
 

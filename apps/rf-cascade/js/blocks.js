@@ -27,6 +27,9 @@ class Block {
   render() {
     this.element = document.createElement('div');
     this.element.className = 'rf-block';
+    if (this.type === 'Annotation') {
+      this.element.classList.add('rf-block--annotation');
+    }
     this.element.dataset.id = this.id;
     this.updatePosition();
 
@@ -46,6 +49,9 @@ class Block {
     this.paramDisplay = document.createElement('div');
     this.paramDisplay.className = 'rf-block__params';
     this.element.appendChild(this.paramDisplay);
+    if (this.type === 'Annotation') {
+      this.paramDisplay.style.display = 'none';
+    }
     this.updateParamDisplay();
 
     // Resize Handle
@@ -338,6 +344,33 @@ class Mixer extends Block {
   }
 }
 
+class Annotation extends Block {
+  setupParams() {
+    this.params = {
+      Text: 'Double-click to edit note',
+      Font_Size: 14
+    };
+  }
+  setupPorts() {
+    this.inputs = [];
+    this.outputs = [];
+  }
+  getBodyHTML() {
+    const fontSize = this.params.Font_Size || 14;
+    const txt = this.params.Text || '';
+    const escapedText = txt.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `<div class="annotation-text" style="font-size: ${fontSize}px; width: 100%; height: 100%; text-align: left; overflow: hidden; white-space: normal; word-break: break-word; padding: 4px; box-sizing: border-box;">${escapedText}</div>`;
+  }
+  updateParamDisplay() {
+    if (this.element) {
+      const body = this.element.querySelector('.rf-block__body');
+      if (body) {
+        body.innerHTML = this.getBodyHTML();
+      }
+    }
+  }
+}
+
 window.RFBlocks = {
   Block,
   Amplifier,
@@ -348,5 +381,6 @@ window.RFBlocks = {
   Splitter,
   Combiner,
   Load,
-  Mixer
+  Mixer,
+  Annotation
 };
