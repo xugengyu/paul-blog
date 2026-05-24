@@ -1,3 +1,9 @@
+:root {
+  --bg-primary: var(--bg-elevated, #FFFFFF);
+  --bg-secondary: var(--bg-surface, #F0EFEB);
+  --border-color: var(--border, #E0DDD5);
+}
+
 /* App specific reset & layout */
 html, body {
   margin: 0;
