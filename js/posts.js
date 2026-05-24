@@ -10,8 +10,15 @@
   const monthContainer = document.getElementById('filter-months');
   const clearBtn = document.getElementById('filter-clear');
   const noResults = document.getElementById('no-results');
+  const searchInput = document.getElementById('post-search');
 
   if (!cards.length || !tagContainer || !monthContainer) return;
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      applyFilters();
+    });
+  }
 
   // ---- Build unique tags & months from DOM ----
   const tagSet = new Set();
@@ -83,8 +90,9 @@
     });
     var activeMonthBtn = document.querySelector('.filter-month--active');
     var activeMonth = activeMonthBtn ? activeMonthBtn.dataset.month : null;
+    var searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
-    var anyFilterActive = activeTags.length > 0 || activeMonth;
+    var anyFilterActive = activeTags.length > 0 || activeMonth || searchQuery;
     clearBtn.style.display = anyFilterActive ? 'block' : 'none';
 
     var visibleCount = 0;
@@ -92,13 +100,16 @@
     cards.forEach(function (card) {
       var cardTags = (card.dataset.tags || '').split(',').map(function (t) { return t.trim(); });
       var cardMonth = card.dataset.month;
+      var cardTitle = (card.querySelector('.post-card__title').textContent || '').toLowerCase();
+      var cardExcerpt = (card.querySelector('.post-card__excerpt').textContent || '').toLowerCase();
 
       var tagMatch = activeTags.length === 0 || activeTags.some(function (t) {
         return cardTags.indexOf(t) !== -1;
       });
       var monthMatch = !activeMonth || cardMonth === activeMonth;
+      var textMatch = !searchQuery || cardTitle.includes(searchQuery) || cardExcerpt.includes(searchQuery) || cardTags.some(t => t.toLowerCase().includes(searchQuery));
 
-      if (tagMatch && monthMatch) {
+      if (tagMatch && monthMatch && textMatch) {
         card.classList.remove('post-card--hidden');
         visibleCount++;
       } else {

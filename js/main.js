@@ -37,22 +37,6 @@
     }
   });
 
-  // ---------- Mobile nav ----------
-  const hamburger = document.getElementById('nav-hamburger');
-  const menu = document.getElementById('nav-menu');
-
-  if (hamburger && menu) {
-    hamburger.addEventListener('click', function () {
-      menu.classList.toggle('nav__menu--open');
-    });
-
-    // Close menu when a link is clicked
-    menu.querySelectorAll('.nav__link').forEach(function (link) {
-      link.addEventListener('click', function () {
-        menu.classList.remove('nav__menu--open');
-      });
-    });
-  }
 
   // ---------- Contact form validation & submit ----------
   const form = document.getElementById('contact-form');

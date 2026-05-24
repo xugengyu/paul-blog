@@ -162,6 +162,7 @@
     var noteCat    = document.getElementById('note-category');
     var noteConn   = document.getElementById('note-connected-links');
     var noteClose  = document.getElementById('note-close');
+    var searchInput = document.getElementById('note-search');
 
     function openNote(d) {
       noteTitle.textContent = d.title;
@@ -191,8 +192,16 @@
     overlay.addEventListener('click', function (e) { if (e.target === overlay) closeNote(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeNote(); });
 
-    // ---- Category filter ----
+    // ---- Category filter & Search ----
     var hiddenCategories = {};
+    var searchQuery = '';
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        applyFilter();
+      });
+    }
 
     document.querySelectorAll('#mindmap-legend .legend-item').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -211,15 +220,28 @@
     function applyFilter() {
       nodeSel
         .transition().duration(300)
-        .style('opacity', function (d) { return hiddenCategories[d.category] ? 0.08 : 1; })
-        .style('pointer-events', function (d) { return hiddenCategories[d.category] ? 'none' : 'all'; });
+        .style('opacity', function (d) { 
+          var matchesSearch = !searchQuery || (d.title && d.title.toLowerCase().includes(searchQuery)) || (d.content && d.content.toLowerCase().includes(searchQuery));
+          return (hiddenCategories[d.category] || !matchesSearch) ? 0.08 : 1; 
+        })
+        .style('pointer-events', function (d) { 
+          var matchesSearch = !searchQuery || (d.title && d.title.toLowerCase().includes(searchQuery)) || (d.content && d.content.toLowerCase().includes(searchQuery));
+          return (hiddenCategories[d.category] || !matchesSearch) ? 'none' : 'all'; 
+        });
 
       linkSel
         .transition().duration(300)
         .style('opacity', function (d) {
-          var srcCat = (typeof d.source === 'object') ? d.source.category : nodes.find(function (n) { return n.id === d.source; }).category;
-          var tgtCat = (typeof d.target === 'object') ? d.target.category : nodes.find(function (n) { return n.id === d.target; }).category;
-          return (hiddenCategories[srcCat] || hiddenCategories[tgtCat]) ? 0.04 : 0.45;
+          var srcNode = (typeof d.source === 'object') ? d.source : nodes.find(function (n) { return n.id === d.source; });
+          var tgtNode = (typeof d.target === 'object') ? d.target : nodes.find(function (n) { return n.id === d.target; });
+          
+          var srcMatch = !searchQuery || (srcNode.title && srcNode.title.toLowerCase().includes(searchQuery)) || (srcNode.content && srcNode.content.toLowerCase().includes(searchQuery));
+          var tgtMatch = !searchQuery || (tgtNode.title && tgtNode.title.toLowerCase().includes(searchQuery)) || (tgtNode.content && tgtNode.content.toLowerCase().includes(searchQuery));
+
+          var srcHidden = hiddenCategories[srcNode.category] || !srcMatch;
+          var tgtHidden = hiddenCategories[tgtNode.category] || !tgtMatch;
+
+          return (srcHidden || tgtHidden) ? 0.04 : 0.45;
         });
     }
 
