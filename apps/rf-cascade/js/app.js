@@ -315,6 +315,7 @@ const App = {
       let blockTotalF = 1;
       let blockTotalGainLinear = 1;
       let blockTotalOip3Linear = Infinity;
+      let blockFrequencies = [];
       
       const incomingWires = wires.filter(w => w.targetId === block.id);
       
@@ -325,28 +326,68 @@ const App = {
         blockTotalF = Math.pow(10, blockNF / 10);
         blockTotalGainLinear = 1;
         blockTotalOip3Linear = Infinity;
+        
+        let startFreq = block.params.Frequency_MHz !== undefined ? block.params.Frequency_MHz : 2400;
+        blockFrequencies = [startFreq];
+        
         log += `  Initial Power: ${blockPin.toFixed(2)} dBm\n`;
       } else if (block.type === 'Combiner') {
-        // Combiner sums linear power
+        // Combiner sums linear power and combines frequencies
         let sumMw = 0;
         let sumInvOip3 = 0;
+        let combinedFreqs = [];
         incomingWires.forEach(w => {
           let sig = inputSignals[block.id][w.targetPort];
-          sumMw += Math.pow(10, sig.power_dBm / 10);
-          if (sig.totalF > blockTotalF) blockTotalF = sig.totalF;
-          if (sig.totalGainLinear > blockTotalGainLinear) blockTotalGainLinear = sig.totalGainLinear;
-          sumInvOip3 += 1 / (sig.totalOip3Linear || Infinity);
+          if (sig) {
+            sumMw += Math.pow(10, sig.power_dBm / 10);
+            if (sig.totalF > blockTotalF) blockTotalF = sig.totalF;
+            if (sig.totalGainLinear > blockTotalGainLinear) blockTotalGainLinear = sig.totalGainLinear;
+            sumInvOip3 += 1 / (sig.totalOip3Linear || Infinity);
+            if (sig.frequencies) {
+              combinedFreqs.push(...sig.frequencies);
+            }
+          }
         });
         blockPin = 10 * Math.log10(sumMw);
         blockTotalOip3Linear = sumInvOip3 > 0 ? 1 / sumInvOip3 : Infinity;
+        blockFrequencies = [...new Set(combinedFreqs)].sort((a, b) => a - b);
         log += `  Combined Pin: ${blockPin.toFixed(2)} dBm\n`;
+      } else if (block.type === 'Mixer') {
+        // Mixer takes RF from 'rf' input port, LO from 'lo' input port
+        const sigRF = inputSignals[block.id]['rf'];
+        const sigLO = inputSignals[block.id]['lo'];
+        
+        if (sigRF) {
+          blockPin = sigRF.power_dBm;
+          blockTotalF = sigRF.totalF;
+          blockTotalGainLinear = sigRF.totalGainLinear;
+          blockTotalOip3Linear = sigRF.totalOip3Linear || Infinity;
+          blockFrequencies = sigRF.frequencies || [];
+        } else {
+          blockPin = -100;
+          blockTotalF = 1;
+          blockTotalGainLinear = 1;
+          blockTotalOip3Linear = Infinity;
+          blockFrequencies = [];
+        }
+        
+        let loFreq = 0;
+        if (sigLO && sigLO.frequencies && sigLO.frequencies.length > 0) {
+          loFreq = sigLO.frequencies[0];
+        }
+        log += `  RF Pin: ${blockPin.toFixed(2)} dBm\n`;
+        log += `  LO Freq: ${loFreq} MHz\n`;
+        block.currentLOFreq = loFreq;
       } else {
         // Standard block (1 input)
         let sig = inputSignals[block.id][incomingWires[0].targetPort];
-        blockPin = sig.power_dBm;
-        blockTotalF = sig.totalF;
-        blockTotalGainLinear = sig.totalGainLinear;
-        blockTotalOip3Linear = sig.totalOip3Linear !== undefined ? sig.totalOip3Linear : Infinity;
+        if (sig) {
+          blockPin = sig.power_dBm;
+          blockTotalF = sig.totalF;
+          blockTotalGainLinear = sig.totalGainLinear;
+          blockTotalOip3Linear = sig.totalOip3Linear !== undefined ? sig.totalOip3Linear : Infinity;
+          blockFrequencies = sig.frequencies || [];
+        }
         log += `  Pin: ${blockPin.toFixed(2)} dBm\n`;
       }
       
@@ -378,6 +419,24 @@ const App = {
         nextBlockGain = -(block.params.Loss_dB + splitLoss);
         nextBlockNF = block.params.Loss_dB;
         log += `  Split Loss: ${(block.params.Loss_dB + splitLoss).toFixed(2)} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+      } else if (block.type === 'Mixer') {
+        let convGain = block.params.Conversion_Gain_dB !== undefined ? block.params.Conversion_Gain_dB : -6.0;
+        power_dBm += convGain;
+        nextBlockGain = convGain;
+        nextBlockNF = block.params.NF_dB !== undefined ? block.params.NF_dB : 6.0;
+        log += `  Conv. Gain: ${convGain.toFixed(2)} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+        
+        // Frequency translation
+        let loFreq = block.currentLOFreq || 0;
+        let mixedFreqs = [];
+        blockFrequencies.forEach(f => {
+          mixedFreqs.push(f + loFreq);
+          let diff = Math.abs(f - loFreq);
+          if (diff > 0) {
+            mixedFreqs.push(diff);
+          }
+        });
+        blockFrequencies = [...new Set(mixedFreqs)].sort((a, b) => a - b);
       } else if (block.type === 'Load') {
         log += `  Absorbed Power: ${blockPin.toFixed(2)} dBm\n\n`;
         block.calculatedPOut = undefined;
@@ -400,6 +459,8 @@ const App = {
           nextBlockOIP3_dBm = block.params.OIP3_dBm;
         } else if (block.type === 'Amplifier') {
           nextBlockOIP3_dBm = 30;
+        } else if (block.type === 'Mixer') {
+          nextBlockOIP3_dBm = 15;
         }
         let oip3_i = Math.pow(10, nextBlockOIP3_dBm / 10);
         blockTotalOip3Linear = 1 / ( (1 / oip3_i) + (1 / (g_i * blockTotalOip3Linear)) );
@@ -410,11 +471,14 @@ const App = {
       
       block.calculatedOIP3 = blockTotalOip3Linear !== Infinity ? 10 * Math.log10(blockTotalOip3Linear) : Infinity;
       block.calculatedIIP3 = block.calculatedOIP3 !== Infinity ? block.calculatedOIP3 - (10 * Math.log10(blockTotalGainLinear)) : Infinity;
+      block.calculatedFrequencies = blockFrequencies;
       
       let oip3LogVal = block.calculatedOIP3 !== Infinity ? block.calculatedOIP3.toFixed(2) + ' dBm' : 'inf';
       let iip3LogVal = block.calculatedIIP3 !== Infinity ? block.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
+      let freqLogVal = blockFrequencies.length > 0 ? blockFrequencies.join(', ') + ' MHz' : 'none';
       log += `  Cascaded OIP3: ${oip3LogVal}\n`;
       log += `  Cascaded IIP3: ${iip3LogVal}\n`;
+      log += `  Frequencies: ${freqLogVal}\n`;
       
       block.updateParamDisplay();
       
@@ -426,7 +490,8 @@ const App = {
           power_dBm: power_dBm,
           totalF: blockTotalF,
           totalGainLinear: blockTotalGainLinear,
-          totalOip3Linear: blockTotalOip3Linear
+          totalOip3Linear: blockTotalOip3Linear,
+          frequencies: blockFrequencies
         };
         if (!processed.has(w.targetId) && !queue.find(b => b.id === w.targetId)) {
           const tgtBlock = blocks.find(b => b.id === w.targetId);

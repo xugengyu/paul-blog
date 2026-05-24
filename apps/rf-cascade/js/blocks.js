@@ -126,6 +126,12 @@ class Block {
       const iip3Str = isFinite(this.calculatedIIP3) ? this.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
       lines.push(`IIP3: ${iip3Str}`);
     }
+    if (this.calculatedFrequencies !== undefined && this.calculatedFrequencies.length > 0) {
+      const freqStr = this.calculatedFrequencies.length > 3 
+        ? `${this.calculatedFrequencies.slice(0, 3).join(', ')}...`
+        : this.calculatedFrequencies.join(', ');
+      lines.push(`Freq: ${freqStr} MHz`);
+    }
 
     this.paramDisplay.innerHTML = lines.join('<br>');
   }
@@ -136,6 +142,7 @@ class Block {
     this.calculatedNF = undefined;
     this.calculatedOIP3 = undefined;
     this.calculatedIIP3 = undefined;
+    this.calculatedFrequencies = undefined;
     this.updateParamDisplay();
   }
 
@@ -191,6 +198,7 @@ class Filter extends Block {
 class SignalSource extends Block {
   setupParams() {
     this.params = {
+      Frequency_MHz: 2400,
       Power_dBm: -50,
       NF_dB: 0
     };
@@ -282,6 +290,28 @@ class Load extends Block {
   }
 }
 
+class Mixer extends Block {
+  setupParams() {
+    this.params = {
+      Conversion_Gain_dB: -6.0,
+      NF_dB: 6.0,
+      OIP3_dBm: 15.0
+    };
+  }
+  setupPorts() {
+    this.inputs = [
+      { id: 'rf', offsetY: 30 },
+      { id: 'lo', offsetY: 50 }
+    ];
+    this.outputs = [
+      { id: 'if', offsetY: 40 }
+    ];
+  }
+  getBodyHTML() {
+    return `<span style="font-size:20px; font-weight:bold;">&#8855;</span>`;
+  }
+}
+
 window.RFBlocks = {
   Block,
   Amplifier,
@@ -291,5 +321,6 @@ window.RFBlocks = {
   FreeSpaceLink,
   Splitter,
   Combiner,
-  Load
+  Load,
+  Mixer
 };
