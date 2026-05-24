@@ -95,12 +95,12 @@ const Workspace = {
     this.selectedWires.clear();
   },
 
-  addBlock(type, x, y) {
-    const id = 'blk_' + Date.now() + Math.floor(Math.random()*1000);
+  addBlock(type, x, y, id) {
+    const blockId = id || ('blk_' + Date.now() + Math.floor(Math.random()*1000));
     const BlockClass = window.RFBlocks[type];
     if (!BlockClass) return;
     
-    const block = new BlockClass(id, type, x, y);
+    const block = new BlockClass(blockId, type, x, y);
     this.blocks.push(block);
     
     const el = block.render();
@@ -238,6 +238,74 @@ const Workspace = {
       this.removeBlock(b.id);
     });
     this.clearSelection();
+    if (window.App) window.App.calculateCascade();
+  },
+
+  exportWorkspace() {
+    const data = {
+      blocks: this.blocks.map(b => ({
+        id: b.id,
+        type: b.type,
+        x: b.x,
+        y: b.y,
+        w: b.element ? b.element.offsetWidth : 120,
+        h: b.element ? b.element.offsetHeight : 80,
+        params: b.params
+      })),
+      wires: this.wires.map(w => ({
+        sourceId: w.sourceId,
+        sourcePort: w.sourcePort,
+        targetId: w.targetId,
+        targetPort: w.targetPort
+      }))
+    };
+    
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'rf-workspace.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  importWorkspace(data) {
+    if (!data || !Array.isArray(data.blocks)) return;
+    
+    this.clear();
+    
+    // 1. Recreate blocks
+    data.blocks.forEach(b => {
+      const newBlock = this.addBlock(b.type, b.x, b.y, b.id);
+      if (newBlock) {
+        newBlock.params = JSON.parse(JSON.stringify(b.params));
+        if (b.w && newBlock.element) newBlock.element.style.width = b.w + 'px';
+        if (b.h && newBlock.element) newBlock.element.style.height = b.h + 'px';
+        newBlock.rebuildPorts();
+        newBlock.updateParamDisplay();
+      }
+    });
+    
+    // 2. Recreate wires
+    if (Array.isArray(data.wires)) {
+      data.wires.forEach(w => {
+        const wire = new Wire(w.sourceId, w.sourcePort, w.targetId, w.targetPort);
+        this.svgLayer.appendChild(wire.element);
+        this.wires.push(wire);
+        
+        wire.element.addEventListener('dblclick', (ev) => {
+          ev.stopPropagation();
+          if (confirm('Delete this connection?')) {
+            this.removeWire(wire.id);
+            if (window.App) window.App.calculateCascade();
+          }
+        });
+      });
+    }
+    
+    this.updateWires();
     if (window.App) window.App.calculateCascade();
   },
 

@@ -31,6 +31,34 @@ const App = {
   },
   
   setupUI() {
+    // Save Workspace button
+    document.getElementById('btn-save-ws').addEventListener('click', () => {
+      window.Workspace.exportWorkspace();
+    });
+
+    // Load Workspace button
+    const fileInput = document.getElementById('input-load-ws');
+    document.getElementById('btn-load-ws').addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const data = JSON.parse(evt.target.result);
+          window.Workspace.importWorkspace(data);
+        } catch (err) {
+          alert('Failed to parse workspace file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
     // Clear button
     document.getElementById('btn-clear').addEventListener('click', () => {
       if(confirm("Are you sure you want to clear the workspace?")) {
