@@ -148,7 +148,7 @@ class Block {
       }
     }
 
-    this.paramDisplay.innerHTML = lines.join('<br>');
+    this.paramDisplay.innerHTML = lines.join('');
   }
 
   clearCalculations() {

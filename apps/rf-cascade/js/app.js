@@ -18,6 +18,27 @@ const App = {
         this.hideContextMenu();
       }
     });
+
+    // Keyboard shortcuts (Copy/Paste/Delete)
+    window.addEventListener('keydown', (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
+        return;
+      }
+
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          window.Workspace.copy();
+        } else if (e.key === 'v' || e.key === 'V') {
+          e.preventDefault();
+          window.Workspace.paste(window.Workspace.lastMouseX, window.Workspace.lastMouseY);
+        }
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        window.Workspace.deleteSelected();
+      }
+    });
   },
   
   setupToolbox() {

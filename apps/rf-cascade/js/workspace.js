@@ -31,10 +31,18 @@ const Workspace = {
   tempWire: null,
   contextMenuX: 0,
   contextMenuY: 0,
+  lastMouseX: 200,
+  lastMouseY: 200,
   
   init() {
     this.container = document.getElementById('workspace');
     this.svgLayer = document.getElementById('wires-layer');
+    
+    this.container.addEventListener('mousemove', e => {
+      const rect = this.container.getBoundingClientRect();
+      this.lastMouseX = e.clientX - rect.left;
+      this.lastMouseY = e.clientY - rect.top;
+    });
     
     this.container.addEventListener('dragover', e => {
       e.preventDefault();
