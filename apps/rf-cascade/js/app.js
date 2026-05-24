@@ -39,6 +39,8 @@ const App = {
         window.Workspace.deleteSelected();
       }
     });
+
+    this.setupSidebarResizers();
   },
   
   setupToolbox() {
@@ -48,6 +50,58 @@ const App = {
         e.dataTransfer.setData('application/rf-block', item.dataset.type);
         e.dataTransfer.effectAllowed = 'copy';
       });
+    });
+  },
+
+  setupSidebarResizers() {
+    const leftSidebar = document.getElementById('sidebar-left');
+    const rightSidebar = document.getElementById('sidebar-right');
+    const resizerLeft = document.getElementById('resizer-left');
+    const resizerRight = document.getElementById('resizer-right');
+    const mainContainer = document.querySelector('.app-main');
+
+    let isResizingLeft = false;
+    let isResizingRight = false;
+
+    resizerLeft.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      isResizingLeft = true;
+      resizerLeft.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+    });
+
+    resizerRight.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      isResizingRight = true;
+      resizerRight.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isResizingLeft) {
+        const containerRect = mainContainer.getBoundingClientRect();
+        let newWidth = e.clientX - containerRect.left;
+        newWidth = Math.max(150, Math.min(newWidth, 500));
+        leftSidebar.style.width = newWidth + 'px';
+      } else if (isResizingRight) {
+        const containerRect = mainContainer.getBoundingClientRect();
+        let newWidth = containerRect.right - e.clientX;
+        newWidth = Math.max(150, Math.min(newWidth, 500));
+        rightSidebar.style.width = newWidth + 'px';
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isResizingLeft) {
+        isResizingLeft = false;
+        resizerLeft.classList.remove('resizing');
+        document.body.style.cursor = 'default';
+      }
+      if (isResizingRight) {
+        isResizingRight = false;
+        resizerRight.classList.remove('resizing');
+        document.body.style.cursor = 'default';
+      }
     });
   },
   

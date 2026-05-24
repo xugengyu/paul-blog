@@ -27,7 +27,7 @@
     <!-- Main Workspace Area -->
     <div class="app-main">
       <!-- Toolbox Sidebar -->
-      <aside class="app-sidebar">
+      <aside id="sidebar-left" class="app-sidebar">
         <h3 class="sidebar-title">Components</h3>
         <p class="sidebar-subtitle">Drag & Drop into workspace</p>
         
@@ -71,6 +71,8 @@
         </div>
       </aside>
 
+      <div id="resizer-left" class="sidebar-resizer"></div>
+
       <!-- The Node Canvas -->
       <div id="workspace" class="workspace">
         <!-- SVG layer for wires -->
@@ -78,8 +80,10 @@
         <!-- HTML Blocks will be dynamically appended here -->
       </div>
 
+      <div id="resizer-right" class="sidebar-resizer"></div>
+
       <!-- Results Sidebar -->
-      <aside class="app-sidebar">
+      <aside id="sidebar-right" class="app-sidebar">
         <h3 class="sidebar-title">Analysis</h3>
         <button id="btn-calculate" class="app-btn app-btn--primary" style="margin-bottom: var(--space-md);">Simulate</button>
         
