@@ -152,6 +152,7 @@ html, body {
 
 /* Blocks */
 .rf-block {
+  box-sizing: border-box;
   position: absolute;
   width: 120px;
   height: 80px;
@@ -240,10 +241,10 @@ html, body {
   background: var(--text-primary);
 }
 .port--in {
-  left: -6px;
+  left: -8px;
 }
 .port--out {
-  right: -6px;
+  right: -8px;
 }
 
 /* Context Menu */

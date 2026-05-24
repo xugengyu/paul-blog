@@ -123,6 +123,9 @@ const App = {
       }
     });
     this.activeBlock.updateParamDisplay();
+    if (this.activeBlock.rebuildPorts) {
+      this.activeBlock.rebuildPorts();
+    }
   },
 
   calculateCascade() {

@@ -175,14 +175,34 @@ const Workspace = {
       let newW = this.dragState.startW + (e.clientX - this.dragState.startX);
       let newH = this.dragState.startH + (e.clientY - this.dragState.startY);
       
+      newW = Math.round(newW / this.gridSize) * this.gridSize;
+      newH = Math.round(newH / this.gridSize) * this.gridSize;
+      
       newW = Math.max(60, newW);
       newH = Math.max(40, newH);
       
       block.element.style.width = newW + 'px';
       block.element.style.height = newH + 'px';
       
-      block.inputs.forEach(p => p.offsetY = newH / 2);
-      block.outputs.forEach(p => p.offsetY = newH / 2);
+      if (block.updatePortsBasedOnParams) {
+        block.updatePortsBasedOnParams();
+      } else {
+        block.inputs.forEach((p, index, arr) => {
+          p.offsetY = newH / (arr.length + 1) * (index + 1);
+        });
+        block.outputs.forEach((p, index, arr) => {
+          p.offsetY = newH / (arr.length + 1) * (index + 1);
+        });
+      }
+      
+      block.inputs.forEach(p => {
+        const portEl = block.element.querySelector(`.port--in[data-port-id="${p.id}"]`);
+        if (portEl) portEl.style.top = (p.offsetY - 2) + 'px';
+      });
+      block.outputs.forEach(p => {
+        const portEl = block.element.querySelector(`.port--out[data-port-id="${p.id}"]`);
+        if (portEl) portEl.style.top = (p.offsetY - 2) + 'px';
+      });
       
       this.updateWires();
     }
@@ -267,11 +287,15 @@ const Workspace = {
   },
 
   updateWires() {
-    this.wires.forEach(wire => {
+    this.wires = this.wires.filter(wire => {
       const srcPos = this.getPortCoords(wire.sourceId, wire.sourcePort, 'out');
       const tgtPos = this.getPortCoords(wire.targetId, wire.targetPort, 'in');
       if (srcPos && tgtPos) {
         this.drawBezier(wire.element, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y);
+        return true;
+      } else {
+        if (wire.element) wire.element.remove();
+        return false;
       }
     });
   },
