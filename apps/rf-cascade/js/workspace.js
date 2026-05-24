@@ -18,8 +18,12 @@ const Workspace = {
   selectedWires: new Set(),
   clipboard: null,
   container: null,
+  canvas: null,
   svgLayer: null,
   gridSize: 20,
+  zoom: 1,
+  panX: 0,
+  panY: 0,
   displayOptions: {
     showBlockParams: true,
     showCascadedParams: true,
@@ -33,16 +37,42 @@ const Workspace = {
   contextMenuY: 0,
   lastMouseX: 200,
   lastMouseY: 200,
-  
+  resultsStale: false,
+
   init() {
     this.container = document.getElementById('workspace');
     this.svgLayer = document.getElementById('wires-layer');
+
+    // Create a canvas layer that we scale/pan for zoom
+    this.canvas = document.createElement('div');
+    this.canvas.id = 'workspace-canvas';
+    this.canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:0 0;';
+    // Move svgLayer into canvas
+    this.container.appendChild(this.canvas);
+    this.canvas.appendChild(this.svgLayer);
     
     this.container.addEventListener('mousemove', e => {
       const rect = this.container.getBoundingClientRect();
-      this.lastMouseX = e.clientX - rect.left;
-      this.lastMouseY = e.clientY - rect.top;
+      this.lastMouseX = (e.clientX - rect.left) / this.zoom;
+      this.lastMouseY = (e.clientY - rect.top) / this.zoom;
     });
+    
+    // Scroll-wheel zoom
+    this.container.addEventListener('wheel', e => {
+      e.preventDefault();
+      const rect = this.container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+      const newZoom = Math.max(0.2, Math.min(4, this.zoom * zoomFactor));
+      
+      // Adjust pan so zoom centres on mouse position
+      this.panX = mouseX - (mouseX - this.panX) * (newZoom / this.zoom);
+      this.panY = mouseY - (mouseY - this.panY) * (newZoom / this.zoom);
+      this.zoom = newZoom;
+      this._applyTransform();
+    }, { passive: false });
     
     this.container.addEventListener('dragover', e => {
       e.preventDefault();
@@ -54,13 +84,14 @@ const Workspace = {
       const type = e.dataTransfer.getData('application/rf-block');
       if (type) {
         const rect = this.container.getBoundingClientRect();
-        let x = e.clientX - rect.left - 60;
-        let y = e.clientY - rect.top - 40;
+        let x = (e.clientX - rect.left - this.panX) / this.zoom - 60;
+        let y = (e.clientY - rect.top - this.panY) / this.zoom - 40;
         
         x = Math.round(x / this.gridSize) * this.gridSize;
         y = Math.round(y / this.gridSize) * this.gridSize;
         
         this.addBlock(type, x, y);
+        this.markStale();
       }
     });
 
@@ -68,6 +99,46 @@ const Workspace = {
     window.addEventListener('mousemove', this.onMouseMove.bind(this));
     window.addEventListener('mouseup', this.onMouseUp.bind(this));
     this.container.addEventListener('contextmenu', this.onContextMenu.bind(this));
+
+    // Middle-mouse pan
+    this.container.addEventListener('mousedown', (e) => {
+      if (e.button !== 1) return;
+      e.preventDefault();
+      this.dragState = {
+        type: 'pan',
+        startX: e.clientX,
+        startY: e.clientY,
+        startPanX: this.panX,
+        startPanY: this.panY
+      };
+      this.container.style.cursor = 'grabbing';
+    });
+  },
+
+  _applyTransform() {
+    if (this.canvas) {
+      this.canvas.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom})`;
+    }
+    // Keep the dot-grid in sync with pan and zoom
+    if (this.container) {
+      const dotSpacing = this.gridSize * this.zoom;
+      this.container.style.backgroundSize = `${dotSpacing}px ${dotSpacing}px`;
+      this.container.style.backgroundPosition = `${this.panX}px ${this.panY}px`;
+    }
+  },
+
+  markStale() {
+    if (!this.resultsStale) {
+      this.resultsStale = true;
+      const btn = document.getElementById('btn-calculate');
+      if (btn) btn.textContent = '⚠ Simulate';
+    }
+  },
+
+  clearStale() {
+    this.resultsStale = false;
+    const btn = document.getElementById('btn-calculate');
+    if (btn) btn.textContent = 'Simulate';
   },
 
   selectBlock(block) {
@@ -118,7 +189,8 @@ const Workspace = {
     this.blocks.push(block);
     
     const el = block.render();
-    this.container.appendChild(el);
+    // Append to canvas so blocks scale with zoom
+    (this.canvas || this.container).appendChild(el);
 
     el.addEventListener('dblclick', (e) => {
       e.stopPropagation();
@@ -243,7 +315,7 @@ const Workspace = {
           ev.stopPropagation();
           if (confirm('Delete this connection?')) {
             this.removeWire(wire.id);
-            if (window.App) window.App.calculateCascade();
+            this.markStale();
           }
         });
         
@@ -252,7 +324,7 @@ const Workspace = {
     });
     
     this.updateWires();
-    if (window.App) window.App.calculateCascade();
+    this.markStale();
   },
 
   deleteSelected() {
@@ -263,7 +335,7 @@ const Workspace = {
       this.removeBlock(b.id);
     });
     this.clearSelection();
-    if (window.App) window.App.calculateCascade();
+    this.markStale();
   },
 
   exportWorkspace() {
@@ -349,14 +421,16 @@ const Workspace = {
           ev.stopPropagation();
           if (confirm('Delete this connection?')) {
             this.removeWire(wire.id);
-            if (window.App) window.App.calculateCascade();
+            if (window.App) {
+              // Intentionally not calculating cascade automatically
+            }
           }
         });
       });
     }
     
     this.updateWires();
-    if (window.App) window.App.calculateCascade();
+    // Intentionally not calculating cascade automatically
   },
 
   onMouseDown(e) {
@@ -428,8 +502,8 @@ const Workspace = {
         }
         
         const rect = this.container.getBoundingClientRect();
-        const startX = e.clientX - rect.left;
-        const startY = e.clientY - rect.top;
+        const startX = (e.clientX - rect.left - this.panX) / this.zoom;
+        const startY = (e.clientY - rect.top - this.panY) / this.zoom;
         
         const dragBlocks = [];
         this.selectedBlocks.forEach(sb => {
@@ -450,6 +524,7 @@ const Workspace = {
       window.App.hideContextMenu();
       
       const rect = this.container.getBoundingClientRect();
+      // Selection box is in screen space (outside the scaled canvas)
       const startX = e.clientX - rect.left;
       const startY = e.clientY - rect.top;
       
@@ -472,8 +547,21 @@ const Workspace = {
     if (!this.dragState) return;
 
     const rect = this.container.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
+
+    // Middle-mouse pan
+    if (this.dragState.type === 'pan') {
+      this.panX = this.dragState.startPanX + (e.clientX - this.dragState.startX);
+      this.panY = this.dragState.startPanY + (e.clientY - this.dragState.startY);
+      this._applyTransform();
+      return;
+    }
+
+    // Convert screen coords to canvas (world) coords
+    let x = (e.clientX - rect.left - this.panX) / this.zoom;
+    let y = (e.clientY - rect.top - this.panY) / this.zoom;
+    // Screen coords (for selection box which lives outside canvas)
+    let sx = e.clientX - rect.left;
+    let sy = e.clientY - rect.top;
 
     if (this.dragState.type === 'block') {
       const dx = x - this.dragState.clickX;
@@ -494,8 +582,8 @@ const Workspace = {
     } 
     else if (this.dragState.type === 'resize') {
       const block = this.dragState.block;
-      let newW = this.dragState.startW + (e.clientX - this.dragState.startX);
-      let newH = this.dragState.startH + (e.clientY - this.dragState.startY);
+      let newW = this.dragState.startW + (e.clientX - this.dragState.startX) / this.zoom;
+      let newH = this.dragState.startH + (e.clientY - this.dragState.startY) / this.zoom;
       
       newW = Math.round(newW / this.gridSize) * this.gridSize;
       newH = Math.round(newH / this.gridSize) * this.gridSize;
@@ -537,8 +625,8 @@ const Workspace = {
     else if (this.dragState.type === 'select') {
       const x1 = this.dragState.startX;
       const y1 = this.dragState.startY;
-      const x2 = x;
-      const y2 = y;
+      const x2 = sx;
+      const y2 = sy;
       
       const left = Math.min(x1, x2);
       const top = Math.min(y1, y2);
@@ -550,7 +638,12 @@ const Workspace = {
       this.dragState.element.style.width = width + 'px';
       this.dragState.element.style.height = height + 'px';
       
-      const box = { left, top, right: left + width, bottom: top + height };
+      // Convert selection box back to world coords for hit testing
+      const wLeft = (left - this.panX) / this.zoom;
+      const wTop = (top - this.panY) / this.zoom;
+      const wRight = (left + width - this.panX) / this.zoom;
+      const wBottom = (top + height - this.panY) / this.zoom;
+      const box = { left: wLeft, top: wTop, right: wRight, bottom: wBottom };
       
       this.blocks.forEach(b => {
         const bBox = {
@@ -611,9 +704,10 @@ const Workspace = {
               ev.stopPropagation();
               if (confirm('Delete this connection?')) {
                 this.removeWire(wire.id);
-                if (window.App) window.App.calculateCascade();
+                this.markStale();
               }
             });
+            this.markStale();
           }
         }
       }
@@ -628,6 +722,9 @@ const Workspace = {
         this.dragState.element.remove();
       }
     }
+    else if (this.dragState.type === 'pan') {
+      this.container.style.cursor = '';
+    }
 
     this.dragState = null;
   },
@@ -635,8 +732,9 @@ const Workspace = {
   onContextMenu(e) {
     e.preventDefault();
     const rect = this.container.getBoundingClientRect();
-    this.contextMenuX = e.clientX - rect.left;
-    this.contextMenuY = e.clientY - rect.top;
+    // Store world-space coords for paste operations
+    this.contextMenuX = (e.clientX - rect.left - this.panX) / this.zoom;
+    this.contextMenuY = (e.clientY - rect.top - this.panY) / this.zoom;
     
     const blockEl = e.target.closest('.rf-block');
     let targetBlock = null;

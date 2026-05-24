@@ -12,7 +12,7 @@
   const noResults = document.getElementById('no-results');
   const searchInput = document.getElementById('post-search');
 
-  if (!cards.length || !tagContainer || !monthContainer) return;
+  if (!cards.length || !tagContainer) return;
 
   if (searchInput) {
     searchInput.addEventListener('input', function () {
@@ -73,38 +73,42 @@
   }
 
   // ---- Render month buttons ----
-  const monthNames = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
+  if (monthContainer) {
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
 
-  allMonths.forEach(function (m) {
-    var parts = m.split('-');
-    var label = monthNames[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
-    var btn = document.createElement('button');
-    btn.className = 'filter-month';
-    btn.textContent = label;
-    btn.dataset.month = m;
-    btn.addEventListener('click', function () {
-      // Toggle — only one month active at a time
-      var wasActive = btn.classList.contains('filter-month--active');
-      document.querySelectorAll('.filter-month').forEach(function (b) {
-        b.classList.remove('filter-month--active');
+    allMonths.forEach(function (m) {
+      var parts = m.split('-');
+      var label = monthNames[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
+      var btn = document.createElement('button');
+      btn.className = 'filter-month';
+      btn.textContent = label;
+      btn.dataset.month = m;
+      btn.addEventListener('click', function () {
+        // Toggle — only one month active at a time
+        var wasActive = btn.classList.contains('filter-month--active');
+        document.querySelectorAll('.filter-month').forEach(function (b) {
+          b.classList.remove('filter-month--active');
+        });
+        if (!wasActive) btn.classList.add('filter-month--active');
+        applyFilters();
       });
-      if (!wasActive) btn.classList.add('filter-month--active');
-      applyFilters();
+      monthContainer.appendChild(btn);
     });
-    monthContainer.appendChild(btn);
-  });
+  }
 
   // ---- Clear all ----
   clearBtn.addEventListener('click', function () {
     document.querySelectorAll('.filter-tag').forEach(function (b) {
       b.classList.remove('filter-tag--active');
     });
-    document.querySelectorAll('.filter-month').forEach(function (b) {
-      b.classList.remove('filter-month--active');
-    });
+    if (monthContainer) {
+      document.querySelectorAll('.filter-month').forEach(function (b) {
+        b.classList.remove('filter-month--active');
+      });
+    }
     applyFilters();
   });
 
@@ -118,7 +122,9 @@
     var searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
     var anyFilterActive = activeTags.length > 0 || activeMonth || searchQuery;
-    clearBtn.style.display = anyFilterActive ? 'block' : 'none';
+    if (clearBtn) {
+      clearBtn.style.display = anyFilterActive ? 'block' : 'none';
+    }
 
     var visibleCount = 0;
 
@@ -126,7 +132,8 @@
       var cardTags = (card.dataset.tags || '').split(',').map(function (t) { return t.trim(); });
       var cardMonth = card.dataset.month;
       var cardTitle = (card.querySelector('.post-card__title').textContent || '').toLowerCase();
-      var cardExcerpt = (card.querySelector('.post-card__excerpt').textContent || '').toLowerCase();
+      var excerptEl = card.querySelector('.post-card__excerpt');
+      var cardExcerpt = excerptEl ? excerptEl.textContent.toLowerCase() : '';
 
       var tagMatch = activeTags.length === 0 || activeTags.some(function (t) {
         return cardTags.indexOf(t) !== -1;

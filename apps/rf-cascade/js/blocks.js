@@ -48,6 +48,116 @@ class Block {
     // Params display
     this.paramDisplay = document.createElement('div');
     this.paramDisplay.className = 'rf-block__params';
+    
+    // Click on a block param line → open a small inline editor for that specific param
+    this.paramDisplay.addEventListener('click', (e) => {
+      const span = e.target.closest('.rf-block__param-item--block-val');
+      if (!span) return;
+      e.stopPropagation();
+
+      // Find which param key this span belongs to — it's the first word(s) before the colon
+      const text = span.textContent || '';
+      const colonIdx = text.indexOf(':');
+      if (colonIdx === -1) return;
+      const cleanKey = text.substring(0, colonIdx).trim();
+      // Reverse the key cleaning (spaces → underscores)
+      const paramKey = Object.keys(this.params).find(k => k.replace(/_/g, ' ') === cleanKey);
+      if (paramKey === undefined) return;
+
+      // Remove any existing popover
+      const existing = document.getElementById('inline-param-popover');
+      if (existing) existing.remove();
+
+      const currentVal = this.params[paramKey];
+      const popover = document.createElement('div');
+      popover.id = 'inline-param-popover';
+      popover.style.cssText = `
+        position: fixed; z-index: 9999;
+        background: var(--bg-primary, #fff);
+        border: 1px solid var(--border-color, #ccc);
+        border-radius: 6px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        padding: 10px 12px;
+        display: flex; flex-direction: column; gap: 6px;
+        min-width: 180px;
+        font-size: 12px;
+      `;
+
+      const label = document.createElement('div');
+      label.style.cssText = 'font-weight: 600; color: var(--text-primary, #333); margin-bottom: 2px;';
+      label.textContent = cleanKey;
+      popover.appendChild(label);
+
+      const inputRow = document.createElement('div');
+      inputRow.style.cssText = 'display: flex; gap: 4px; align-items: center;';
+
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.value = currentVal;
+      input.step = 'any';
+      input.style.cssText = `
+        flex: 1; padding: 5px 7px;
+        border: 1px solid var(--border-color, #ccc);
+        border-radius: 4px;
+        font-family: inherit; font-size: 12px;
+        background: var(--bg-primary, #fff);
+        color: var(--text-primary, #333);
+      `;
+
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = '✓';
+      saveBtn.title = 'Save';
+      saveBtn.style.cssText = `
+        padding: 5px 8px; border: none; border-radius: 4px;
+        background: #2ecc71; color: white; cursor: pointer; font-size: 13px;
+      `;
+
+      inputRow.appendChild(input);
+      inputRow.appendChild(saveBtn);
+      popover.appendChild(inputRow);
+
+      // Position near the span
+      const spanRect = span.getBoundingClientRect();
+      document.body.appendChild(popover);
+      const popRect = popover.getBoundingClientRect();
+      let top = spanRect.bottom + 4;
+      let left = spanRect.left;
+      if (left + popRect.width > window.innerWidth - 8) left = window.innerWidth - popRect.width - 8;
+      if (top + popRect.height > window.innerHeight - 8) top = spanRect.top - popRect.height - 4;
+      popover.style.top = top + 'px';
+      popover.style.left = left + 'px';
+
+      input.focus();
+      input.select();
+
+      const doSave = () => {
+        const newVal = parseFloat(input.value);
+        if (!isNaN(newVal)) {
+          this.params[paramKey] = newVal;
+          this.updateParamDisplay();
+          if (window.Workspace) window.Workspace.markStale();
+        }
+        popover.remove();
+      };
+
+      saveBtn.addEventListener('click', doSave);
+      input.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') doSave();
+        if (ev.key === 'Escape') popover.remove();
+      });
+
+      // Close on outside click
+      setTimeout(() => {
+        const closeOnOut = (ev) => {
+          if (!popover.contains(ev.target)) {
+            popover.remove();
+            document.removeEventListener('mousedown', closeOnOut, true);
+          }
+        };
+        document.addEventListener('mousedown', closeOnOut, true);
+      }, 0);
+    });
+
     this.element.appendChild(this.paramDisplay);
     if (this.type === 'Annotation') {
       this.paramDisplay.style.display = 'none';
@@ -122,15 +232,45 @@ class Block {
     if (opts.showBlockParams) {
       Object.entries(this.params).forEach(([key, val]) => {
         const cleanKey = key.replace(/_/g, ' ');
-        lines.push(`<span class="rf-block__param-item rf-block__param-item--block-val">${cleanKey}: ${val}</span>`);
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--block-val" style="cursor: pointer;" title="Click to edit parameters">${cleanKey}: ${val}</span>`);
       });
     }
 
     if (opts.showCascadedParams) {
+      // Read thresholds from App settings (fallback to 10 dB if App not yet initialized)
+      const appSettings = (window.App && window.App.settings) || {};
+      const oip3Thresh = appSettings.oip3ThresholdDb !== undefined ? appSettings.oip3ThresholdDb : 10;
+      const iip3Thresh = appSettings.iip3ThresholdDb !== undefined ? appSettings.iip3ThresholdDb : 10;
+      const p1dbThresh = appSettings.p1dbThresholdDb !== undefined ? appSettings.p1dbThresholdDb : 10;
+
+      // Individual violation flags — each metric gets its own so only the violating one highlights
+      let oip3Violated = false;
+      let iip3Violated = false;
+      let p1dbOutViolated = false;
+      let p1dbInViolated = false;
+
       if (this.calculatedPIn !== undefined) {
+        let gain = 0;
+        if (this.params.Gain_dB !== undefined) gain = this.params.Gain_dB;
+        else if (this.params.Conversion_Gain_dB !== undefined) gain = this.params.Conversion_Gain_dB;
+        else if (this.params.Loss_dB !== undefined) gain = -this.params.Loss_dB;
+
+        const oip3 = this.params.OIP3_dBm;
+        const p1db = this.params.P1dB_dBm;
+        const iip3 = oip3 !== undefined ? oip3 - gain : undefined;
+        const inputP1dB = p1db !== undefined ? p1db - gain : undefined;
+
+        if (iip3 !== undefined && (iip3 - this.calculatedPIn) < iip3Thresh) iip3Violated = true;
+        if (inputP1dB !== undefined && (inputP1dB - this.calculatedPIn) < p1dbThresh) p1dbInViolated = true;
+
         lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded Pin: ${this.calculatedPIn.toFixed(2)} dBm</span>`);
       }
       if (this.calculatedPOut !== undefined) {
+        const oip3 = this.params.OIP3_dBm;
+        const p1db = this.params.P1dB_dBm;
+        if (oip3 !== undefined && (oip3 - this.calculatedPOut) < oip3Thresh) oip3Violated = true;
+        if (p1db !== undefined && (p1db - this.calculatedPOut) < p1dbThresh) p1dbOutViolated = true;
+
         lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded Pout: ${this.calculatedPOut.toFixed(2)} dBm</span>`);
       }
       if (this.calculatedNF !== undefined) {
@@ -138,11 +278,18 @@ class Block {
       }
       if (this.calculatedOIP3 !== undefined && !isNaN(this.calculatedOIP3)) {
         const oip3Str = isFinite(this.calculatedOIP3) ? this.calculatedOIP3.toFixed(2) + ' dBm' : 'inf';
-        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded OIP3: ${oip3Str}</span>`);
+        const oip3Style = oip3Violated ? 'color: #ff4444; font-weight: bold;' : '';
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val" style="${oip3Style}">Cascaded OIP3: ${oip3Str}</span>`);
+      }
+      if (this.calculatedP1dB_out !== undefined && !isNaN(this.calculatedP1dB_out)) {
+        const p1dbStr = isFinite(this.calculatedP1dB_out) ? this.calculatedP1dB_out.toFixed(2) + ' dBm' : 'inf';
+        const p1dbStyle = (p1dbOutViolated || p1dbInViolated) ? 'color: #ff4444; font-weight: bold;' : '';
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val" style="${p1dbStyle}">Cascaded P1dB: ${p1dbStr}</span>`);
       }
       if (this.calculatedIIP3 !== undefined && !isNaN(this.calculatedIIP3)) {
         const iip3Str = isFinite(this.calculatedIIP3) ? this.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
-        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded IIP3: ${iip3Str}</span>`);
+        const iip3Style = iip3Violated ? 'color: #ff4444; font-weight: bold;' : '';
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val" style="${iip3Style}">Cascaded IIP3: ${iip3Str}</span>`);
       }
     }
 
@@ -164,6 +311,7 @@ class Block {
     this.calculatedNF = undefined;
     this.calculatedOIP3 = undefined;
     this.calculatedIIP3 = undefined;
+    this.calculatedP1dB_out = undefined;
     this.calculatedFrequencies = undefined;
     this.updateParamDisplay();
   }
@@ -196,6 +344,7 @@ class Amplifier extends Block {
     this.params = {
       Gain_dB: 15,
       NF_dB: 3.0,
+      P1dB_dBm: 20,
       OIP3_dBm: 30
     };
   }
@@ -327,6 +476,7 @@ class Mixer extends Block {
     this.params = {
       Conversion_Gain_dB: -6.0,
       NF_dB: 6.0,
+      P1dB_dBm: 5.0,
       OIP3_dBm: 15.0
     };
   }

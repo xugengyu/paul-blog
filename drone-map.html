@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Drone Flight Map — Random Thoughts of a Random Guy</title>
   <meta name="description" content="Interactive map of FPV drone flight locations.">
   <link rel="stylesheet" href="css/style.css">
-  
+
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
-     
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
   <style>
     #map {
       height: 600px;
@@ -19,10 +19,12 @@
       border-radius: var(--radius-lg);
       border: 1px solid var(--border);
       box-shadow: var(--shadow-sm);
-      z-index: 1; /* Keep below nav */
+      z-index: 1;
+      /* Keep below nav */
     }
   </style>
 </head>
+
 <body>
 
   <!-- ====== Navigation ====== -->
@@ -32,12 +34,12 @@
   <main class="page-content">
     <div class="container" style="max-width:900px">
       <div class="fade-in">
-        
+
         <h1 class="hero__name" style="margin-bottom: var(--space-md);">FPV Flight Map</h1>
         <p style="color: var(--text-secondary); margin-bottom: var(--space-2xl);">
           An interactive map showcasing the various locations I've flown my FPV drones around Washington State.
         </p>
-        
+
         <div id="map"></div>
 
       </div>
@@ -50,15 +52,14 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script>
-     
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
   <script src="js/nav.js"></script>
   <script src="js/main.js"></script>
-  
+
   <script>
-    // Initialize map centered on Redmond, WA area
-    var map = L.map('map').setView([47.6800, -122.1277], 12);
+    // Initialize map
+    var map = L.map('map');
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -67,11 +68,16 @@
     }).addTo(map);
 
     // Add Markers
-    var marker1 = L.marker([47.6974, -122.1484]).addTo(map);
-    marker1.bindPopup("<b>60 Acre Park</b><br>Great wide open space for flying.");
+    var markers = [
+      L.marker([47.6974, -122.1484]).bindPopup("<b>60 Acre Park</b><br>Great wide open space for flying."),
+      L.marker([47.6625, -122.1070]).bindPopup("<b>Marymoor RC Airfield</b><br>Dedicated AMA flying field in Redmond."),
+      L.marker([47.6832, -121.9235]).bindPopup("<b>Snoqualmie Wildlife Area - Stillwater Unit</b><br>Scenic riverside area with open airspace, adjacent to the Snoqualmie Valley Trail.")
+    ];
 
-    var marker2 = L.marker([47.6625, -122.1070]).addTo(map);
-    marker2.bindPopup("<b>Marymoor RC Airfield</b><br>Dedicated AMA flying field in Redmond.");
+    // Group markers and fit bounds automatically
+    var group = L.featureGroup(markers).addTo(map);
+    map.fitBounds(group.getBounds().pad(0.1));
   </script>
 </body>
+
 </html>

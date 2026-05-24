@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RF Cascade Analysis Tool</title>
+  <title>RF Cascade Analysis</title>
   <!-- Reuse the main site CSS for base styles -->
   <link rel="stylesheet" href="../../css/style.css?v=4">
   <!-- App-specific styles -->
   <link rel="stylesheet" href="css/app.css?v=3">
 </head>
+
 <body>
-  
+
   <div class="app-layout">
     <!-- Top Bar -->
     <header class="app-header">
@@ -30,7 +32,7 @@
       <aside id="sidebar-left" class="app-sidebar">
         <h3 class="sidebar-title">Components</h3>
         <p class="sidebar-subtitle">Drag & Drop into workspace</p>
-        
+
         <div class="toolbox-items">
           <div class="toolbox-item" draggable="true" data-type="SignalSource">
             <span class="toolbox-item__icon" style="font-size:20px;">&#8767;</span>
@@ -89,21 +91,31 @@
       <!-- Results Sidebar -->
       <aside id="sidebar-right" class="app-sidebar">
         <h3 class="sidebar-title">Analysis</h3>
-        <button id="btn-calculate" class="app-btn app-btn--primary" style="margin-bottom: var(--space-md);">Simulate</button>
-        
-        <div style="border-bottom: 1px solid var(--border-color); padding-bottom: var(--space-md); margin-bottom: var(--space-md);">
-          <h4 class="sidebar-title" style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">Display Options</h4>
-          <div class="display-options" style="display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--text-sm);">
-            <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; user-select: none;">
+        <div style="display: flex; gap: var(--space-xs); margin-bottom: var(--space-md);">
+          <button id="btn-calculate" class="app-btn app-btn--primary" style="flex: 1;">Simulate</button>
+          <button id="btn-settings" class="app-btn" style="flex-shrink: 0;" title="Simulation Settings">&#9881; Settings</button>
+        </div>
+
+        <div
+          style="border-bottom: 1px solid var(--border-color); padding-bottom: var(--space-md); margin-bottom: var(--space-md);">
+          <h4 class="sidebar-title" style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">Display Options
+          </h4>
+          <div class="display-options"
+            style="display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--text-sm);">
+            <label
+              style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; user-select: none;">
               <input type="checkbox" id="chk-show-block-params" checked /> Block Parameters
             </label>
-            <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; user-select: none;">
+            <label
+              style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; user-select: none;">
               <input type="checkbox" id="chk-show-cascaded-params" checked /> Cascaded Calculations
             </label>
-            <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; user-select: none;">
+            <label
+              style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; user-select: none;">
               <input type="checkbox" id="chk-show-frequency" checked /> Frequencies
             </label>
-            <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; user-select: none;">
+            <label
+              style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; user-select: none;">
               <input type="checkbox" id="chk-show-logs" checked /> Simulation Logs
             </label>
           </div>
@@ -111,7 +123,8 @@
 
         <div id="results-section">
           <p class="sidebar-subtitle">Results</p>
-          <pre id="results-display" style="white-space: pre-wrap; font-family: var(--font-mono); font-size: var(--text-sm); background: var(--bg-primary); padding: var(--space-sm); border: 1px solid var(--border-color); border-radius: var(--radius-sm); min-height: 100px; max-height: 350px; overflow-y: auto;"></pre>
+          <pre id="results-display"
+            style="white-space: pre-wrap; font-family: var(--font-mono); font-size: var(--text-sm); background: var(--bg-primary); padding: var(--space-sm); border: 1px solid var(--border-color); border-radius: var(--radius-sm); min-height: 100px; max-height: 350px; overflow-y: auto;"></pre>
         </div>
       </aside>
     </div>
@@ -125,6 +138,51 @@
     <div class="context-menu__item" id="menu-copy">Copy Selected</div>
     <div class="context-menu__item" id="menu-paste">Paste</div>
     <div class="context-menu__item context-menu__item--danger" id="menu-delete-sel">Delete Selected</div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal__content">
+      <h3>&#9881; Simulation Settings</h3>
+      <div class="modal__body">
+        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0 0 var(--space-sm) 0;">
+          Set the minimum headroom (dB) below OIP3, IIP3, and P1dB before highlighting in red.
+        </p>
+        <div class="form-group">
+          <label for="setting-oip3-threshold">OIP3 Headroom Warning Threshold (dB)</label>
+          <div class="param-input-wrapper">
+            <input type="number" id="setting-oip3-threshold" value="10" step="1" min="0" max="60" />
+            <div class="param-spin-buttons">
+              <button class="spin-btn spin-btn--up" data-target="setting-oip3-threshold" data-step="1">&#9650;</button>
+              <button class="spin-btn spin-btn--down" data-target="setting-oip3-threshold" data-step="1">&#9660;</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="setting-iip3-threshold">IIP3 Headroom Warning Threshold (dB)</label>
+          <div class="param-input-wrapper">
+            <input type="number" id="setting-iip3-threshold" value="10" step="1" min="0" max="60" />
+            <div class="param-spin-buttons">
+              <button class="spin-btn spin-btn--up" data-target="setting-iip3-threshold" data-step="1">&#9650;</button>
+              <button class="spin-btn spin-btn--down" data-target="setting-iip3-threshold" data-step="1">&#9660;</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="setting-p1db-threshold">P1dB Headroom Warning Threshold (dB)</label>
+          <div class="param-input-wrapper">
+            <input type="number" id="setting-p1db-threshold" value="10" step="1" min="0" max="60" />
+            <div class="param-spin-buttons">
+              <button class="spin-btn spin-btn--up" data-target="setting-p1db-threshold" data-step="1">&#9650;</button>
+              <button class="spin-btn spin-btn--down" data-target="setting-p1db-threshold" data-step="1">&#9660;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button id="settings-close" class="app-btn app-btn--primary">Done</button>
+      </div>
+    </div>
   </div>
 
   <!-- Parameter Edit Modal (Hidden by default) -->
@@ -141,8 +199,9 @@
     </div>
   </div>
 
-  <script src="js/blocks.js?v=2"></script>
-  <script src="js/workspace.js?v=2"></script>
-  <script src="js/app.js?v=2"></script>
+  <script src="js/blocks.js?v=13"></script>
+  <script src="js/workspace.js?v=13"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
   <meta name="description" content="Web-based engineering tools and visualizers.">
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
   <!-- ====== Navigation ====== -->
@@ -14,70 +16,95 @@
 
   <!-- ====== Main content ====== -->
   <main class="page-content">
-    <div class="container" style="max-width:800px">
-      <div class="page-header fade-in" style="margin-bottom: var(--space-3xl);">
-        <h1 class="page-header__title" style="font-size: var(--text-3xl); font-weight: 700; margin-bottom: var(--space-sm); letter-spacing: -0.02em;">Apps</h1>
-        <p class="page-header__subtitle" style="font-family: var(--font-serif); font-size: var(--text-lg); color: var(--text-secondary); line-height: 1.6;">Interactive web-based engineering tools and visualizers</p>
+    <div class="posts-layout">
+
+      <!-- Apps list -->
+      <div class="posts-main" id="posts-main">
+        <div class="page-header fade-in" style="margin-bottom: var(--space-3xl);">
+          <h1 class="page-header__title"
+            style="font-size: var(--text-3xl); font-weight: 700; margin-bottom: var(--space-sm); letter-spacing: -0.02em;">
+            Apps</h1>
+          <p class="page-header__subtitle"
+            style="font-family: var(--font-serif); font-size: var(--text-lg); color: var(--text-secondary); line-height: 1.6;">
+            Interactive web-based engineering tools and visualizers</p>
+        </div>
+
+        <div class="fade-in fade-in-delay-1">
+
+          <a href="apps/rf-cascade/index.html" class="post-card" target="_blank" data-tags="RF Engineering, Calculator">
+            <div class="post-card__header">
+              <span class="post-card__title">RF Cascade Analyzer</span>
+            </div>
+            <div class="post-card__tags">
+              <span class="tag">RF Engineering</span>
+              <span class="tag">Calculator</span>
+            </div>
+          </a>
+
+          <a href="apps/link-budget/index.html" class="post-card" target="_blank"
+            data-tags="Satellite Comms, Calculator">
+            <div class="post-card__header">
+              <span class="post-card__title">Satellite Link Budget</span>
+            </div>
+            <div class="post-card__tags">
+              <span class="tag">Satellite Comms</span>
+              <span class="tag">Calculator</span>
+            </div>
+          </a>
+
+          <a href="apps/phased-array/index.html" class="post-card" target="_blank"
+            data-tags="Antenna Design, Visualizer">
+            <div class="post-card__header">
+              <span class="post-card__title">Phased Array Visualizer</span>
+            </div>
+            <div class="post-card__tags">
+              <span class="tag">Antenna Design</span>
+              <span class="tag">Visualizer</span>
+            </div>
+          </a>
+
+          <a href="apps/filter-design/index.html" class="post-card" target="_blank" data-tags="RF Engineering, Design">
+            <div class="post-card__header">
+              <span class="post-card__title">Filter Designer</span>
+            </div>
+            <div class="post-card__tags">
+              <span class="tag">RF Engineering</span>
+              <span class="tag">Design</span>
+            </div>
+          </a>
+
+          <a href="apps/pcb-stackup/index.html" class="post-card" target="_blank" data-tags="PCB Design, Visualizer">
+            <div class="post-card__header">
+              <span class="post-card__title">PCB Stack Up Manager</span>
+            </div>
+            <div class="post-card__tags">
+              <span class="tag">PCB Design</span>
+              <span class="tag">Visualizer</span>
+            </div>
+          </a>
+
+        </div>
+
+        <p class="no-results" id="no-results" style="display:none;">No apps match the current filters.</p>
       </div>
 
-      <div class="fade-in fade-in-delay-1">
-        
-        <a href="apps/rf-cascade/index.html" class="post-card" target="_blank">
-          <div class="post-card__header">
-            <span class="post-card__title">RF Cascade Analysis Tool</span>
-          </div>
-          <p class="post-card__excerpt">Calculate cascaded gain, noise figure, and intercept points (IP3) for RF receiver lineups.</p>
-          <div class="post-card__tags">
-            <span class="tag">RF Engineering</span>
-            <span class="tag">Calculator</span>
-          </div>
-        </a>
+      <!-- Filter sidebar -->
+      <aside class="posts-sidebar fade-in fade-in-delay-2">
+        <div class="filter-section">
+          <input type="text" id="post-search" class="form-input" placeholder="Search apps..."
+            style="width: 100%; margin-bottom: var(--space-md);">
+        </div>
 
-        <a href="apps/link-budget/index.html" class="post-card" target="_blank">
-          <div class="post-card__header">
-            <span class="post-card__title">Satellite Link Budget Tool</span>
+        <div class="filter-section">
+          <p class="filter-section__title">Filter by Tag</p>
+          <div class="filter-tags" id="filter-tags">
+            <!-- populated by posts.js -->
           </div>
-          <p class="post-card__excerpt">Analyze LEO/GEO communication links, path loss, atmospheric absorption, and calculate closing margins.</p>
-          <div class="post-card__tags">
-            <span class="tag">Satellite Comms</span>
-            <span class="tag">Calculator</span>
-          </div>
-        </a>
+        </div>
 
-        <a href="apps/phased-array/index.html" class="post-card" target="_blank">
-          <div class="post-card__header">
-            <span class="post-card__title">Phased Array Visualizer</span>
-          </div>
-          <p class="post-card__excerpt">Interactive beam steering and radiation pattern visualization for linear and planar antenna arrays.</p>
-          <div class="post-card__tags">
-            <span class="tag">Antenna Design</span>
-            <span class="tag">Visualizer</span>
-          </div>
-        </a>
+        <button class="filter-clear" id="filter-clear" style="display:none">✕ Clear all filters</button>
+      </aside>
 
-        <a href="apps/filter-design/index.html" class="post-card" target="_blank">
-          <div class="post-card__header">
-            <span class="post-card__title">Filter Design Tool</span>
-          </div>
-          <p class="post-card__excerpt">Design lumped-element low-pass, high-pass, and band-pass filters (Butterworth, Chebyshev) and plot their frequency response.</p>
-          <div class="post-card__tags">
-            <span class="tag">RF Engineering</span>
-            <span class="tag">Design</span>
-          </div>
-        </a>
-
-        <a href="apps/pcb-stackup/index.html" class="post-card" target="_blank">
-          <div class="post-card__header">
-            <span class="post-card__title">PCB Stack Up Visualizer</span>
-          </div>
-          <p class="post-card__excerpt">Calculate trace impedance and view electromagnetic field distribution for various PCB stackups (microstrip, stripline).</p>
-          <div class="post-card__tags">
-            <span class="tag">PCB Design</span>
-            <span class="tag">Visualizer</span>
-          </div>
-        </a>
-
-      </div>
     </div>
   </main>
 
@@ -87,5 +114,7 @@
 
   <script src="js/nav.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/posts.js"></script>
 </body>
+
 </html>
