@@ -217,6 +217,19 @@
       });
     });
 
+    var legendPanel = document.getElementById('legend-panel');
+    var legendToggle = document.getElementById('legend-toggle');
+    var legendClose = document.getElementById('legend-close');
+
+    if (legendToggle && legendPanel && legendClose) {
+      legendToggle.addEventListener('click', function () {
+        legendPanel.classList.add('legend-panel--open');
+      });
+      legendClose.addEventListener('click', function () {
+        legendPanel.classList.remove('legend-panel--open');
+      });
+    }
+
     function applyFilter() {
       nodeSel
         .transition().duration(300)
@@ -241,7 +254,7 @@
           var srcHidden = hiddenCategories[srcNode.category] || !srcMatch;
           var tgtHidden = hiddenCategories[tgtNode.category] || !tgtMatch;
 
-          return (srcHidden || tgtHidden) ? 0.04 : 0.45;
+          return (srcHidden || tgtHidden) ? 0.05 : 0.8;
         });
     }
 

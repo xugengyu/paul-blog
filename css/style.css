@@ -531,7 +531,33 @@ a:hover{color:var(--accent-hover)}
   color: var(--text-primary);
 }
 
-.mindmap-header__legend{display:flex;gap:var(--space-lg);align-items:center;flex-wrap:wrap}
+.mindmap-header__legend{display:flex;flex-direction:column;gap:var(--space-md);align-items:flex-start;}
+
+.legend-panel {
+  position: absolute;
+  right: 0;
+  top: calc(var(--nav-height) + 80px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-md);
+  transform: translateX(100%);
+  transition: transform var(--transition-base);
+  z-index: 100;
+}
+.legend-panel--open {
+  transform: translateX(0);
+}
+.legend-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: var(--space-xs);
+}
 
 .legend-item {
   display: flex;
@@ -607,7 +633,7 @@ a:hover{color:var(--accent-hover)}
   text-anchor: middle;
 }
 
-.link{stroke:var(--border);stroke-width:1.5;stroke-opacity:0.45}
+.link{stroke:var(--border);stroke-width:3;stroke-opacity:0.8}
 
 /* ---- Note overlay ---- */
 .note-overlay {

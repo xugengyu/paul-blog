@@ -19,6 +19,14 @@
         <h1 class="mindmap-header__title">Knowledge Graph</h1>
         <input type="text" id="note-search" class="form-input" placeholder="Search notes..." style="padding: var(--space-xs) var(--space-sm); font-size: var(--text-sm);">
       </div>
+      <button id="legend-toggle" class="form-submit" style="padding: var(--space-xs) var(--space-sm);">Tags</button>
+    </div>
+
+    <div class="legend-panel" id="legend-panel">
+      <div class="legend-panel__header">
+        <h3 style="font-size: var(--text-sm); font-weight: 600; margin: 0; font-family: var(--font-sans); color: var(--text-primary);">Tags</h3>
+        <button id="legend-close" class="note-overlay__close" style="position: static;">&times;</button>
+      </div>
       <div class="mindmap-header__legend" id="mindmap-legend">
         <button class="legend-item legend-item--active" data-category="Fundamentals"><span class="legend-dot" style="background:var(--node-fundamentals)"></span> Fundamentals</button>
         <button class="legend-item legend-item--active" data-category="RF Engineering"><span class="legend-dot" style="background:var(--node-rf)"></span> RF Engineering</button>
