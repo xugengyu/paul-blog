@@ -141,91 +141,139 @@ const App = {
       return;
     }
 
-    // Find start block (SignalSource or Antenna with NO inputs connected to it)
-    let startBlocks = blocks.filter(b => b.type === 'SignalSource' || b.type === 'Antenna');
-    startBlocks = startBlocks.filter(b => !wires.find(w => w.targetId === b.id));
+    // Find start blocks (blocks with no incoming wires)
+    let startBlocks = blocks.filter(b => !wires.find(w => w.targetId === b.id));
 
     if (startBlocks.length === 0) {
       display.textContent = 'Error: No starting block found (Signal Source or Antenna with no inputs).';
       return;
     }
-    if (startBlocks.length > 1) {
-      display.textContent = 'Error: Multiple un-driven start blocks found. Please construct a single chain.';
-      return;
-    }
-
-    let currentBlock = startBlocks[0];
-    let power_dBm = currentBlock.params.Power_dBm !== undefined ? currentBlock.params.Power_dBm : -100;
-    
-    // Initial NF setup
-    let blockNF = currentBlock.params.NF_dB || 0;
-    let totalF = Math.pow(10, blockNF / 10);
-    let totalGainLinear = 1; 
 
     let log = `--- Cascade Analysis ---\n\n`;
-    log += `Start: ${currentBlock.type}\n`;
     
-    currentBlock.calculatedPOut = power_dBm;
-    currentBlock.calculatedNF = 10 * Math.log10(totalF);
-    currentBlock.updateParamDisplay();
+    let queue = [...startBlocks];
+    let processed = new Set();
+    
+    const inputSignals = {};
+    blocks.forEach(b => {
+      inputSignals[b.id] = {};
+    });
 
-    if (currentBlock.type === 'SignalSource') {
-      log += `Initial Power: ${power_dBm.toFixed(2)} dBm\n`;
-    } else if (currentBlock.type === 'Antenna') {
-       log += `Antenna assumed start power: -100 dBm\n`;
-    }
-
-    let chainValid = true;
-
-    while (chainValid) {
-      const outWires = wires.filter(w => w.sourceId === currentBlock.id);
+    while (queue.length > 0) {
+      // Find a block that is ready (all incoming wires have provided signals)
+      let readyIdx = queue.findIndex(b => {
+        const incomingWires = wires.filter(w => w.targetId === b.id);
+        return incomingWires.every(w => inputSignals[b.id][w.targetPort] !== undefined);
+      });
       
-      if (outWires.length === 0) {
-        log += `\nEnd of Chain Reached.\nFinal Output Power: ${power_dBm.toFixed(2)} dBm`;
-        break; // Done
+      if (readyIdx === -1) {
+        log += `\nError: Cycle detected or unresolved dependency in the graph.\n`;
+        break;
       }
       
-      if (outWires.length > 1) {
-        display.textContent = log + `\nError: Branching detected at ${currentBlock.type}. Strictly linear chains only.`;
-        return;
+      let block = queue.splice(readyIdx, 1)[0];
+      if (processed.has(block.id)) continue;
+      
+      log += `Block: ${block.type} (${block.id.substring(0, 8)})\n`;
+      
+      let blockPin = -100;
+      let blockTotalF = 1;
+      let blockTotalGainLinear = 1;
+      
+      const incomingWires = wires.filter(w => w.targetId === block.id);
+      
+      if (incomingWires.length === 0) {
+        // Source node
+        blockPin = block.params.Power_dBm !== undefined ? block.params.Power_dBm : -100;
+        let blockNF = block.params.NF_dB || 0;
+        blockTotalF = Math.pow(10, blockNF / 10);
+        blockTotalGainLinear = 1;
+        log += `  Initial Power: ${blockPin.toFixed(2)} dBm\n`;
+      } else if (block.type === 'Combiner') {
+        // Combiner sums linear power
+        let sumMw = 0;
+        incomingWires.forEach(w => {
+          let sig = inputSignals[block.id][w.targetPort];
+          sumMw += Math.pow(10, sig.power_dBm / 10);
+          if (sig.totalF > blockTotalF) blockTotalF = sig.totalF;
+          if (sig.totalGainLinear > blockTotalGainLinear) blockTotalGainLinear = sig.totalGainLinear;
+        });
+        blockPin = 10 * Math.log10(sumMw);
+        log += `  Combined Pin: ${blockPin.toFixed(2)} dBm\n`;
+      } else {
+        // Standard block (1 input)
+        let sig = inputSignals[block.id][incomingWires[0].targetPort];
+        blockPin = sig.power_dBm;
+        blockTotalF = sig.totalF;
+        blockTotalGainLinear = sig.totalGainLinear;
+        log += `  Pin: ${blockPin.toFixed(2)} dBm\n`;
       }
-
-      const nextBlockId = outWires[0].targetId;
-      const nextBlock = blocks.find(b => b.id === nextBlockId);
       
-      log += `  |\n  v\nBlock: ${nextBlock.type}\n`;
+      block.calculatedPIn = incomingWires.length > 0 ? blockPin : undefined;
       
-      nextBlock.calculatedPIn = power_dBm;
-
+      let power_dBm = blockPin;
       let nextBlockNF = 0;
       let nextBlockGain = 0;
-
-      if (nextBlock.type === 'Amplifier') {
-        power_dBm += nextBlock.params.Gain_dB;
-        nextBlockGain = nextBlock.params.Gain_dB;
-        nextBlockNF = nextBlock.params.NF_dB;
-        log += `  + Gain: ${nextBlock.params.Gain_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
-      } else if (nextBlock.type === 'Attenuator' || nextBlock.type === 'Filter') {
-        power_dBm -= nextBlock.params.Loss_dB;
-        nextBlockGain = -nextBlock.params.Loss_dB;
-        nextBlockNF = nextBlock.params.Loss_dB;
-        log += `  - Loss: ${nextBlock.params.Loss_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
-      } else {
-        nextBlockNF = nextBlock.params.NF_dB || 0;
+      
+      if (block.type === 'Amplifier') {
+        power_dBm += block.params.Gain_dB;
+        nextBlockGain = block.params.Gain_dB;
+        nextBlockNF = block.params.NF_dB;
+        log += `  Gain: ${block.params.Gain_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+      } else if (block.type === 'Attenuator' || block.type === 'Filter') {
+        power_dBm -= block.params.Loss_dB;
+        nextBlockGain = -block.params.Loss_dB;
+        nextBlockNF = block.params.Loss_dB;
+        log += `  Loss: ${block.params.Loss_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+      } else if (block.type === 'Combiner') {
+        power_dBm -= block.params.Loss_dB;
+        nextBlockGain = -block.params.Loss_dB;
+        nextBlockNF = block.params.Loss_dB;
+        log += `  Combiner Loss: ${block.params.Loss_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+      } else if (block.type === 'Splitter') {
+        let numOuts = Math.max(2, Math.floor(block.params.Number_of_Outputs));
+        let splitLoss = 10 * Math.log10(numOuts);
+        power_dBm -= (block.params.Loss_dB + splitLoss);
+        nextBlockGain = -(block.params.Loss_dB + splitLoss);
+        nextBlockNF = block.params.Loss_dB;
+        log += `  Split Loss: ${(block.params.Loss_dB + splitLoss).toFixed(2)} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+      } else if (block.type === 'Load') {
+        log += `  Absorbed Power: ${blockPin.toFixed(2)} dBm\n\n`;
+        block.calculatedPOut = undefined;
+        block.updateParamDisplay();
+        processed.add(block.id);
+        continue;
+      } else if (block.type !== 'SignalSource') {
+        nextBlockNF = block.params.NF_dB || 0;
         log += `  (No power effect) -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
       }
       
-      let f_i = Math.pow(10, nextBlockNF / 10);
-      let g_i = Math.pow(10, nextBlockGain / 10);
+      if (block.type !== 'SignalSource') {
+        let f_i = Math.pow(10, nextBlockNF / 10);
+        let g_i = Math.pow(10, nextBlockGain / 10);
+        blockTotalF = blockTotalF + (f_i - 1) / blockTotalGainLinear;
+        blockTotalGainLinear = blockTotalGainLinear * g_i;
+      }
       
-      totalF = totalF + (f_i - 1) / totalGainLinear;
-      totalGainLinear = totalGainLinear * g_i;
-
-      nextBlock.calculatedPOut = power_dBm;
-      nextBlock.calculatedNF = 10 * Math.log10(totalF);
-      nextBlock.updateParamDisplay();
-
-      currentBlock = nextBlock;
+      block.calculatedPOut = power_dBm;
+      block.calculatedNF = 10 * Math.log10(blockTotalF);
+      block.updateParamDisplay();
+      
+      processed.add(block.id);
+      
+      const outWires = wires.filter(w => w.sourceId === block.id);
+      outWires.forEach(w => {
+        inputSignals[w.targetId][w.targetPort] = {
+          power_dBm: power_dBm,
+          totalF: blockTotalF,
+          totalGainLinear: blockTotalGainLinear
+        };
+        if (!processed.has(w.targetId) && !queue.find(b => b.id === w.targetId)) {
+          const tgtBlock = blocks.find(b => b.id === w.targetId);
+          if (tgtBlock) queue.push(tgtBlock);
+        }
+      });
+      log += '\n';
     }
     
     display.textContent = log;

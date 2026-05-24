@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphic Novels — Random Thoughts of a Random Guy</title>
+  <meta name="description" content="My graphic novel reading list and ratings.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="nav" id="main-nav"></nav>
+
+  <!-- ====== Main content ====== -->
+  <main class="page-content">
+    <div class="container" style="max-width:900px">
+      <div class="fade-in">
+
+        <h1 class="hero__name" style="margin-bottom: var(--space-md);">Graphic Novel Reading List</h1>
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-2xl);">
+          A collection of graphic novels I've read.
+        </p>
+
+        <div class="book-grid" id="book-grid">
+          <!-- Books will be injected here by JS -->
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Random Thoughts of a Random Guy. Built with care.</p>
+  </footer>
+
+  <script src="js/nav.js"></script>
+  <script src="js/main.js"></script>
+
+  <script>
+    // Define the reading list here
+    const books = [
+      { title: "Saga", author: "Brian K. Vaughan", rating: 5 },
+      { title: "Y: The Last Man", author: "Brian K. Vaughan", rating: 5 },
+      { title: "Ex Machina", author: "Brian K. Vaughan", rating: 5 },
+      { title: "East of West", author: "Jonathan Hickman", rating: 5 },
+      { title: "Watchmen", author: "Alan Moore", rating: 5 },
+      { title: "Uzumaki", author: "Junji Ito", rating: 5 },
+      { title: "Maus", author: "Art Spiegelman", rating: 5 },
+      { title: "Death Note", author: "Tsugumi Ohba", rating: 5 },
+
+    ];
+
+    async function loadBooks() {
+      const container = document.getElementById("book-grid");
+      container.innerHTML = "";
+
+      for (const book of books) {
+        // Create the card shell
+        const card = document.createElement("div");
+        card.className = "book-card";
+
+        // Render a loading state first
+        card.innerHTML = `
+          <div style="height:300px; background:var(--border-light); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);">
+            Loading cover...
+          </div>
+          <div class="book-card__content">
+            <div class="book-card__title">${book.title}</div>
+            <div style="color:var(--text-secondary); font-size:var(--text-sm); margin-bottom:var(--space-xs);">${book.author}</div>
+            <div style="color:var(--accent); font-size: 1.1rem; margin-top: auto;">${"★".repeat(book.rating)}${"☆".repeat(5 - book.rating)}</div>
+          </div>
+        `;
+        container.appendChild(card);
+
+        // Fetch image from Open Library by Title
+        try {
+          // Open Library Search API
+          const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}`);
+          const data = await res.json();
+
+          let coverUrl = ""; // No cover fallback
+          if (data.docs && data.docs.length > 0) {
+            // Find the first search result that has a cover_i attribute
+            const docWithCover = data.docs.find(d => d.cover_i);
+            if (docWithCover) {
+              coverUrl = `https://covers.openlibrary.org/b/id/${docWithCover.cover_i}-L.jpg`;
+            }
+          }
+
+          if (coverUrl) {
+            const imgHTML = `<img src="${coverUrl}" alt="${book.title} cover" class="book-card__image">`;
+            card.firstElementChild.outerHTML = imgHTML;
+          } else {
+            card.firstElementChild.innerHTML = "No cover found";
+          }
+
+        } catch (e) {
+          console.error("Error fetching cover for", book.title);
+          card.firstElementChild.innerHTML = "Error loading cover";
+        }
+      }
+    }
+
+    // Run the load function when the page is ready
+    document.addEventListener("DOMContentLoaded", loadBooks);
+  </script>
+</body>
+
+</html>

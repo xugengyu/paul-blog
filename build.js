@@ -75,6 +75,24 @@ function buildPosts() {
   // Sort posts by date descending
   posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  // Generate home page index.html
+  const homeTemplatePath = path.join(TEMPLATES_DIR, 'index.html');
+  if (fs.existsSync(homeTemplatePath)) {
+    const homeTemplate = fs.readFileSync(homeTemplatePath, 'utf-8');
+    const latestPosts = posts.slice(0, 3);
+    const latestPostsHtml = latestPosts.map(post => {
+      const d = new Date(post.date);
+      const formattedMonth = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return `<a href="posts/${post.slug}.html" class="post-teaser">
+          <span class="post-teaser__title">${post.title}</span>
+          <span class="post-teaser__date">${formattedMonth}</span>
+        </a>`;
+    }).join('\n        ');
+    
+    const finalHome = homeTemplate.replace('{{LATEST_POSTS}}', latestPostsHtml);
+    fs.writeFileSync(path.join(__dirname, 'index.html'), finalHome);
+  }
+
   // Generate posts.html list
   let postsListHtml = '';
   let currentYear = null;

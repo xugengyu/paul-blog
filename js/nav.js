@@ -11,6 +11,7 @@
   if (currentPath.includes('posts.html') || currentPath.includes('/posts/')) activePage = 'posts';
   else if (currentPath.includes('notes.html')) activePage = 'notes';
   else if (currentPath.includes('apps.html')) activePage = 'apps';
+  else if (currentPath.includes('hobby.html')) activePage = 'hobby';
   else if (currentPath.includes('contact.html')) activePage = 'contact';
 
   const navHtml = `
@@ -29,6 +30,7 @@
           <li><a href="${basePath}posts.html" class="nav__link ${activePage === 'posts' ? 'nav__link--active' : ''}">Posts</a></li>
           <li><a href="${basePath}notes.html" class="nav__link ${activePage === 'notes' ? 'nav__link--active' : ''}">Notes</a></li>
           <li><a href="${basePath}apps.html" class="nav__link ${activePage === 'apps' ? 'nav__link--active' : ''}">Apps</a></li>
+          <li><a href="${basePath}hobby.html" class="nav__link ${activePage === 'hobby' ? 'nav__link--active' : ''}">Hobby</a></li>
           <li><a href="${basePath}contact.html" class="nav__link ${activePage === 'contact' ? 'nav__link--active' : ''}">Contact</a></li>
           <li>
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">

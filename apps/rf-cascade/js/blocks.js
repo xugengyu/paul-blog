@@ -259,6 +259,19 @@ class Combiner extends Block {
   }
 }
 
+class Load extends Block {
+  setupParams() {
+    this.params = {};
+  }
+  setupPorts() {
+    this.inputs = [{ id: 'in1', offsetY: 40 }];
+    this.outputs = [];
+  }
+  getBodyHTML() {
+    return `<span style="font-size:20px;">&#8486;</span>`;
+  }
+}
+
 window.RFBlocks = {
   Block,
   Amplifier,
@@ -267,5 +280,6 @@ window.RFBlocks = {
   SignalSource,
   FreeSpaceLink,
   Splitter,
-  Combiner
+  Combiner,
+  Load
 };

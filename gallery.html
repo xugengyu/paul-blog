@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Gallery — Random Thoughts of a Random Guy</title>
+  <meta name="description" content="My photography portfolio covering New York and Washington.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="nav" id="main-nav"></nav>
+
+  <!-- ====== Main content ====== -->
+  <main class="page-content">
+    <div class="container" style="max-width:900px">
+      <div class="fade-in">
+
+        <h1 class="hero__name" style="margin-bottom: var(--space-md);">Photography Gallery</h1>
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-3xl);">
+          A collection of some of my favorite shots from my travels.
+        </p>
+
+        <h2 class="section__title">New York</h2>
+        <div class="photo-gallery">
+          <img src="assets/nyc01.jpeg" alt="New York 1" class="photo-gallery__image" loading="lazy">
+          <img src="assets/nyc02.jpeg" alt="New York 2" class="photo-gallery__image" loading="lazy">
+          <img src="assets/nyc03.jpeg" alt="New York 3" class="photo-gallery__image" loading="lazy">
+          <img src="assets/nyc04.jpeg" alt="New York 4" class="photo-gallery__image" loading="lazy">
+          <img src="assets/nyc05.jpeg" alt="New York 5" class="photo-gallery__image" loading="lazy">
+          <img src="assets/nyc06.jpeg" alt="New York 6" class="photo-gallery__image" loading="lazy">
+        </div>
+
+        <h2 class="section__title">Washington State</h2>
+        <div class="photo-gallery">
+          <img src="assets/washington01.jpeg" alt="Washington 1" class="photo-gallery__image" loading="lazy">
+          <img src="assets/washington02.jpeg" alt="Washington 2" class="photo-gallery__image" loading="lazy">
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox" class="lightbox">
+    <span class="lightbox__close">&times;</span>
+    <img class="lightbox__content" id="lightbox-img">
+  </div>
+
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Random Thoughts of a Random Guy. Built with care.</p>
+  </footer>
+
+  <script src="js/nav.js"></script>
+  <script src="js/main.js"></script>
+
+  <script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const images = document.querySelectorAll('.photo-gallery__image');
+    
+    // Open lightbox
+    images.forEach(img => {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', () => {
+        lightbox.style.display = 'flex';
+        lightboxImg.src = img.src;
+      });
+    });
+
+    // Close lightbox
+    lightbox.addEventListener('click', (e) => {
+      if (e.target !== lightboxImg) {
+        lightbox.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+
+</html>
