@@ -389,3 +389,17 @@ html, body {
 .spin-btn--up {
   border-bottom: 1px solid var(--border-color);
 }
+
+/* Custom Selection Marquee & Multi-selection */
+.selection-box {
+  position: absolute;
+  border: 1px dashed #3498db;
+  background: rgba(52, 152, 219, 0.1);
+  pointer-events: none;
+  z-index: 10000;
+}
+
+.wire-path--selected {
+  stroke: #3498db !important;
+  stroke-width: 4px;
+}

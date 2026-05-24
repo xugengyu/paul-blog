@@ -14,12 +14,17 @@ class Wire {
 const Workspace = {
   blocks: [],
   wires: [],
+  selectedBlocks: new Set(),
+  selectedWires: new Set(),
+  clipboard: null,
   container: null,
   svgLayer: null,
   gridSize: 20,
   
   dragState: null,
   tempWire: null,
+  contextMenuX: 0,
+  contextMenuY: 0,
   
   init() {
     this.container = document.getElementById('workspace');
@@ -49,6 +54,45 @@ const Workspace = {
     window.addEventListener('mousemove', this.onMouseMove.bind(this));
     window.addEventListener('mouseup', this.onMouseUp.bind(this));
     this.container.addEventListener('contextmenu', this.onContextMenu.bind(this));
+  },
+
+  selectBlock(block) {
+    this.selectedBlocks.add(block);
+    if (block.element) {
+      block.element.classList.add('rf-block--selected');
+    }
+  },
+
+  deselectBlock(block) {
+    this.selectedBlocks.delete(block);
+    if (block.element) {
+      block.element.classList.remove('rf-block--selected');
+    }
+  },
+
+  selectWire(wire) {
+    this.selectedWires.add(wire);
+    if (wire.element) {
+      wire.element.classList.add('wire-path--selected');
+    }
+  },
+
+  deselectWire(wire) {
+    this.selectedWires.delete(wire);
+    if (wire.element) {
+      wire.element.classList.remove('wire-path--selected');
+    }
+  },
+
+  clearSelection() {
+    this.selectedBlocks.forEach(b => {
+      if (b.element) b.element.classList.remove('rf-block--selected');
+    });
+    this.selectedWires.forEach(w => {
+      if (w.element) w.element.classList.remove('wire-path--selected');
+    });
+    this.selectedBlocks.clear();
+    this.selectedWires.clear();
   },
 
   addBlock(type, x, y) {
@@ -89,7 +133,117 @@ const Workspace = {
     }
   },
 
+  intersects(r1, r2) {
+    return !(r2.left > r1.right || 
+             r2.right < r1.left || 
+             r2.top > r1.bottom || 
+             r2.bottom < r1.top);
+  },
+
+  getSelectionBounds() {
+    let minX = Infinity, minY = Infinity;
+    this.selectedBlocks.forEach(b => {
+      if (b.x < minX) minX = b.x;
+      if (b.y < minY) minY = b.y;
+    });
+    return { left: minX === Infinity ? 0 : minX, top: minY === Infinity ? 0 : minY };
+  },
+
+  copy() {
+    if (this.selectedBlocks.size === 0) return;
+    
+    const bounds = this.getSelectionBounds();
+    this.clipboard = {
+      blocks: Array.from(this.selectedBlocks).map(b => ({
+        relId: b.id,
+        type: b.type,
+        params: JSON.parse(JSON.stringify(b.params)),
+        w: b.element ? b.element.offsetWidth : 120,
+        h: b.element ? b.element.offsetHeight : 80,
+        relX: b.x - bounds.left,
+        relY: b.y - bounds.top
+      })),
+      wires: Array.from(this.selectedWires)
+        .filter(w => {
+          const srcBlock = this.blocks.find(b => b.id === w.sourceId);
+          const tgtBlock = this.blocks.find(b => b.id === w.targetId);
+          return srcBlock && tgtBlock && this.selectedBlocks.has(srcBlock) && this.selectedBlocks.has(tgtBlock);
+        })
+        .map(w => ({
+          sourceRelId: w.sourceId,
+          sourcePort: w.sourcePort,
+          targetRelId: w.targetId,
+          targetPort: w.targetPort
+        }))
+    };
+  },
+
+  paste(x, y) {
+    if (!this.clipboard || !this.clipboard.blocks.length) return;
+    
+    const idMap = {};
+    this.clearSelection();
+    
+    this.clipboard.blocks.forEach(cb => {
+      let px = x + cb.relX;
+      let py = y + cb.relY;
+      
+      px = Math.round(px / this.gridSize) * this.gridSize;
+      py = Math.round(py / this.gridSize) * this.gridSize;
+      
+      const newBlock = this.addBlock(cb.type, px, py);
+      if (newBlock) {
+        newBlock.params = JSON.parse(JSON.stringify(cb.params));
+        if (newBlock.element) {
+          newBlock.element.style.width = cb.w + 'px';
+          newBlock.element.style.height = cb.h + 'px';
+        }
+        newBlock.rebuildPorts();
+        newBlock.updateParamDisplay();
+        
+        idMap[cb.relId] = newBlock.id;
+        this.selectBlock(newBlock);
+      }
+    });
+    
+    this.clipboard.wires.forEach(cw => {
+      const newSourceId = idMap[cw.sourceRelId];
+      const newTargetId = idMap[cw.targetRelId];
+      if (newSourceId && newTargetId) {
+        const wire = new Wire(newSourceId, cw.sourcePort, newTargetId, cw.targetPort);
+        this.svgLayer.appendChild(wire.element);
+        this.wires.push(wire);
+        
+        wire.element.addEventListener('dblclick', (ev) => {
+          ev.stopPropagation();
+          if (confirm('Delete this connection?')) {
+            this.removeWire(wire.id);
+            if (window.App) window.App.calculateCascade();
+          }
+        });
+        
+        this.selectWire(wire);
+      }
+    });
+    
+    this.updateWires();
+    if (window.App) window.App.calculateCascade();
+  },
+
+  deleteSelected() {
+    this.selectedWires.forEach(w => {
+      this.removeWire(w.id);
+    });
+    this.selectedBlocks.forEach(b => {
+      this.removeBlock(b.id);
+    });
+    this.clearSelection();
+    if (window.App) window.App.calculateCascade();
+  },
+
   onMouseDown(e) {
+    if (e.button !== 0) return; // only left click
+    
     if (e.target.classList.contains('port')) {
       if (e.target.classList.contains('port--out')) {
         const blockId = e.target.dataset.blockId;
@@ -124,29 +278,75 @@ const Workspace = {
       }
     }
 
-    if (e.target.classList.contains('wire-path')) return;
+    if (e.target.classList.contains('wire-path')) {
+      const wireId = e.target.dataset.id;
+      const wire = this.wires.find(w => w.id === wireId);
+      if (wire) {
+        if (!e.ctrlKey && !e.shiftKey) {
+          this.clearSelection();
+        }
+        if (this.selectedWires.has(wire)) {
+          this.deselectWire(wire);
+        } else {
+          this.selectWire(wire);
+        }
+      }
+      return;
+    }
 
     const blockEl = e.target.closest('.rf-block');
     if (blockEl) {
-      if (e.button !== 0) return;
-      
       const blockId = blockEl.dataset.id;
       const block = this.blocks.find(b => b.id === blockId);
       if (block) {
-        document.querySelectorAll('.rf-block--selected').forEach(el => el.classList.remove('rf-block--selected'));
-        blockEl.classList.add('rf-block--selected');
+        if (!this.selectedBlocks.has(block)) {
+          if (!e.ctrlKey && !e.shiftKey) {
+            this.clearSelection();
+          }
+          this.selectBlock(block);
+        } else if (e.ctrlKey || e.shiftKey) {
+          this.deselectBlock(block);
+          return;
+        }
         
         const rect = this.container.getBoundingClientRect();
+        const startX = e.clientX - rect.left;
+        const startY = e.clientY - rect.top;
+        
+        const dragBlocks = [];
+        this.selectedBlocks.forEach(sb => {
+          dragBlocks.push({ block: sb, startX: sb.x, startY: sb.y });
+        });
+        
         this.dragState = {
           type: 'block',
-          block: block,
-          offsetX: e.clientX - rect.left - block.x,
-          offsetY: e.clientY - rect.top - block.y
+          clickX: startX,
+          clickY: startY,
+          dragBlocks: dragBlocks
         };
       }
     } else {
-      document.querySelectorAll('.rf-block--selected').forEach(el => el.classList.remove('rf-block--selected'));
+      if (!e.ctrlKey && !e.shiftKey) {
+        this.clearSelection();
+      }
       window.App.hideContextMenu();
+      
+      const rect = this.container.getBoundingClientRect();
+      const startX = e.clientX - rect.left;
+      const startY = e.clientY - rect.top;
+      
+      const selectionBoxEl = document.createElement('div');
+      selectionBoxEl.className = 'selection-box';
+      selectionBoxEl.style.left = startX + 'px';
+      selectionBoxEl.style.top = startY + 'px';
+      this.container.appendChild(selectionBoxEl);
+      
+      this.dragState = {
+        type: 'select',
+        startX: startX,
+        startY: startY,
+        element: selectionBoxEl
+      };
     }
   },
 
@@ -158,16 +358,20 @@ const Workspace = {
     let y = e.clientY - rect.top;
 
     if (this.dragState.type === 'block') {
-      const block = this.dragState.block;
-      let newX = x - this.dragState.offsetX;
-      let newY = y - this.dragState.offsetY;
+      const dx = x - this.dragState.clickX;
+      const dy = y - this.dragState.clickY;
       
-      newX = Math.round(newX / this.gridSize) * this.gridSize;
-      newY = Math.round(newY / this.gridSize) * this.gridSize;
-      
-      block.x = newX;
-      block.y = newY;
-      block.updatePosition();
+      this.dragState.dragBlocks.forEach(db => {
+        let newX = db.startX + dx;
+        let newY = db.startY + dy;
+        
+        newX = Math.round(newX / this.gridSize) * this.gridSize;
+        newY = Math.round(newY / this.gridSize) * this.gridSize;
+        
+        db.block.x = newX;
+        db.block.y = newY;
+        db.block.updatePosition();
+      });
       this.updateWires();
     } 
     else if (this.dragState.type === 'resize') {
@@ -212,6 +416,55 @@ const Workspace = {
         this.drawBezier(this.tempWire, srcPos.x, srcPos.y, x, y);
       }
     }
+    else if (this.dragState.type === 'select') {
+      const x1 = this.dragState.startX;
+      const y1 = this.dragState.startY;
+      const x2 = x;
+      const y2 = y;
+      
+      const left = Math.min(x1, x2);
+      const top = Math.min(y1, y2);
+      const width = Math.abs(x2 - x1);
+      const height = Math.abs(y2 - y1);
+      
+      this.dragState.element.style.left = left + 'px';
+      this.dragState.element.style.top = top + 'px';
+      this.dragState.element.style.width = width + 'px';
+      this.dragState.element.style.height = height + 'px';
+      
+      const box = { left, top, right: left + width, bottom: top + height };
+      
+      this.blocks.forEach(b => {
+        const bBox = {
+          left: b.x,
+          top: b.y,
+          right: b.x + (b.element ? b.element.offsetWidth : 120),
+          bottom: b.y + (b.element ? b.element.offsetHeight : 80)
+        };
+        if (this.intersects(box, bBox)) {
+          this.selectBlock(b);
+        } else {
+          this.deselectBlock(b);
+        }
+      });
+      
+      this.wires.forEach(w => {
+        if (w.element) {
+          const bbox = w.element.getBBox();
+          const wBox = {
+            left: bbox.x,
+            top: bbox.y,
+            right: bbox.x + bbox.width,
+            bottom: bbox.y + bbox.height
+          };
+          if (this.intersects(box, wBox)) {
+            this.selectWire(w);
+          } else {
+            this.deselectWire(w);
+          }
+        }
+      });
+    }
   },
 
   onMouseUp(e) {
@@ -236,10 +489,11 @@ const Workspace = {
             this.wires.push(wire);
             this.updateWires();
             
-            wire.element.addEventListener('click', (ev) => {
+            wire.element.addEventListener('dblclick', (ev) => {
               ev.stopPropagation();
               if (confirm('Delete this connection?')) {
                 this.removeWire(wire.id);
+                if (window.App) window.App.calculateCascade();
               }
             });
           }
@@ -251,22 +505,36 @@ const Workspace = {
         this.tempWire = null;
       }
     }
+    else if (this.dragState.type === 'select') {
+      if (this.dragState.element) {
+        this.dragState.element.remove();
+      }
+    }
 
     this.dragState = null;
   },
 
   onContextMenu(e) {
     e.preventDefault();
+    const rect = this.container.getBoundingClientRect();
+    this.contextMenuX = e.clientX - rect.left;
+    this.contextMenuY = e.clientY - rect.top;
+    
     const blockEl = e.target.closest('.rf-block');
+    let targetBlock = null;
     if (blockEl) {
       const blockId = blockEl.dataset.id;
-      const block = this.blocks.find(b => b.id === blockId);
-      if (block) {
-        window.App.showContextMenu(e.clientX, e.clientY, block);
-      }
-    } else {
-      window.App.hideContextMenu();
+      targetBlock = this.blocks.find(b => b.id === blockId);
     }
+    
+    if (targetBlock) {
+      if (!this.selectedBlocks.has(targetBlock)) {
+        this.clearSelection();
+        this.selectBlock(targetBlock);
+      }
+    }
+    
+    window.App.showContextMenu(e.clientX, e.clientY, targetBlock);
   },
 
   getPortCoords(blockId, portId, type) {
@@ -316,6 +584,7 @@ const Workspace = {
     this.wires.forEach(w => { if (w.element) w.element.remove(); });
     this.blocks = [];
     this.wires = [];
+    this.clearSelection();
   }
 };
 

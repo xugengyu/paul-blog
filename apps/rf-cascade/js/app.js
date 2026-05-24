@@ -60,7 +60,23 @@ const App = {
       if (this.activeBlock) {
         window.Workspace.removeBlock(this.activeBlock.id);
         this.activeBlock = null;
+        this.calculateCascade();
       }
+    });
+
+    document.getElementById('menu-copy').addEventListener('click', () => {
+      this.hideContextMenu();
+      window.Workspace.copy();
+    });
+
+    document.getElementById('menu-paste').addEventListener('click', () => {
+      this.hideContextMenu();
+      window.Workspace.paste(window.Workspace.contextMenuX, window.Workspace.contextMenuY);
+    });
+
+    document.getElementById('menu-delete-sel').addEventListener('click', () => {
+      this.hideContextMenu();
+      window.Workspace.deleteSelected();
     });
 
     // Modal buttons
@@ -73,6 +89,7 @@ const App = {
         this.saveParamsFromModal();
       }
       this.modal.classList.add('hidden');
+      this.calculateCascade();
     });
   },
 
@@ -81,6 +98,43 @@ const App = {
     this.contextMenu.style.left = x + 'px';
     this.contextMenu.style.top = y + 'px';
     this.contextMenu.classList.remove('hidden');
+
+    const selBlocksCount = window.Workspace.selectedBlocks.size;
+    const selWiresCount = window.Workspace.selectedWires.size;
+    const hasSelection = selBlocksCount > 0 || selWiresCount > 0;
+    const hasCopied = window.Workspace.clipboard && window.Workspace.clipboard.blocks.length > 0;
+
+    const menuEdit = document.getElementById('menu-edit');
+    const menuDelete = document.getElementById('menu-delete');
+    const menuCopy = document.getElementById('menu-copy');
+    const menuPaste = document.getElementById('menu-paste');
+    const menuDeleteSel = document.getElementById('menu-delete-sel');
+
+    if (block && selBlocksCount <= 1 && selWiresCount === 0) {
+      menuEdit.style.display = 'block';
+      menuDelete.style.display = 'block';
+    } else {
+      menuEdit.style.display = 'none';
+      menuDelete.style.display = 'none';
+    }
+
+    if (selBlocksCount > 0) {
+      menuCopy.style.display = 'block';
+    } else {
+      menuCopy.style.display = 'none';
+    }
+
+    if (hasCopied) {
+      menuPaste.style.display = 'block';
+    } else {
+      menuPaste.style.display = 'none';
+    }
+
+    if (hasSelection) {
+      menuDeleteSel.style.display = 'block';
+    } else {
+      menuDeleteSel.style.display = 'none';
+    }
   },
 
   hideContextMenu() {
@@ -232,6 +286,7 @@ const App = {
       let blockPin = -100;
       let blockTotalF = 1;
       let blockTotalGainLinear = 1;
+      let blockTotalOip3Linear = Infinity;
       
       const incomingWires = wires.filter(w => w.targetId === block.id);
       
@@ -241,17 +296,21 @@ const App = {
         let blockNF = block.params.NF_dB || 0;
         blockTotalF = Math.pow(10, blockNF / 10);
         blockTotalGainLinear = 1;
+        blockTotalOip3Linear = Infinity;
         log += `  Initial Power: ${blockPin.toFixed(2)} dBm\n`;
       } else if (block.type === 'Combiner') {
         // Combiner sums linear power
         let sumMw = 0;
+        let sumInvOip3 = 0;
         incomingWires.forEach(w => {
           let sig = inputSignals[block.id][w.targetPort];
           sumMw += Math.pow(10, sig.power_dBm / 10);
           if (sig.totalF > blockTotalF) blockTotalF = sig.totalF;
           if (sig.totalGainLinear > blockTotalGainLinear) blockTotalGainLinear = sig.totalGainLinear;
+          sumInvOip3 += 1 / (sig.totalOip3Linear || Infinity);
         });
         blockPin = 10 * Math.log10(sumMw);
+        blockTotalOip3Linear = sumInvOip3 > 0 ? 1 / sumInvOip3 : Infinity;
         log += `  Combined Pin: ${blockPin.toFixed(2)} dBm\n`;
       } else {
         // Standard block (1 input)
@@ -259,6 +318,7 @@ const App = {
         blockPin = sig.power_dBm;
         blockTotalF = sig.totalF;
         blockTotalGainLinear = sig.totalGainLinear;
+        blockTotalOip3Linear = sig.totalOip3Linear !== undefined ? sig.totalOip3Linear : Infinity;
         log += `  Pin: ${blockPin.toFixed(2)} dBm\n`;
       }
       
@@ -306,10 +366,28 @@ const App = {
         let g_i = Math.pow(10, nextBlockGain / 10);
         blockTotalF = blockTotalF + (f_i - 1) / blockTotalGainLinear;
         blockTotalGainLinear = blockTotalGainLinear * g_i;
+        
+        let nextBlockOIP3_dBm = 100;
+        if (block.params.OIP3_dBm !== undefined) {
+          nextBlockOIP3_dBm = block.params.OIP3_dBm;
+        } else if (block.type === 'Amplifier') {
+          nextBlockOIP3_dBm = 30;
+        }
+        let oip3_i = Math.pow(10, nextBlockOIP3_dBm / 10);
+        blockTotalOip3Linear = 1 / ( (1 / oip3_i) + (1 / (g_i * blockTotalOip3Linear)) );
       }
       
       block.calculatedPOut = power_dBm;
       block.calculatedNF = 10 * Math.log10(blockTotalF);
+      
+      block.calculatedOIP3 = blockTotalOip3Linear !== Infinity ? 10 * Math.log10(blockTotalOip3Linear) : Infinity;
+      block.calculatedIIP3 = block.calculatedOIP3 !== Infinity ? block.calculatedOIP3 - (10 * Math.log10(blockTotalGainLinear)) : Infinity;
+      
+      let oip3LogVal = block.calculatedOIP3 !== Infinity ? block.calculatedOIP3.toFixed(2) + ' dBm' : 'inf';
+      let iip3LogVal = block.calculatedIIP3 !== Infinity ? block.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
+      log += `  Cascaded OIP3: ${oip3LogVal}\n`;
+      log += `  Cascaded IIP3: ${iip3LogVal}\n`;
+      
       block.updateParamDisplay();
       
       processed.add(block.id);
@@ -319,7 +397,8 @@ const App = {
         inputSignals[w.targetId][w.targetPort] = {
           power_dBm: power_dBm,
           totalF: blockTotalF,
-          totalGainLinear: blockTotalGainLinear
+          totalGainLinear: blockTotalGainLinear,
+          totalOip3Linear: blockTotalOip3Linear
         };
         if (!processed.has(w.targetId) && !queue.find(b => b.id === w.targetId)) {
           const tgtBlock = blocks.find(b => b.id === w.targetId);

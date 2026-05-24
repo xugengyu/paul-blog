@@ -118,6 +118,14 @@ class Block {
     if (this.calculatedNF !== undefined) {
       lines.push(`NF: ${this.calculatedNF.toFixed(2)} dB`);
     }
+    if (this.calculatedOIP3 !== undefined && !isNaN(this.calculatedOIP3)) {
+      const oip3Str = isFinite(this.calculatedOIP3) ? this.calculatedOIP3.toFixed(2) + ' dBm' : 'inf';
+      lines.push(`OIP3: ${oip3Str}`);
+    }
+    if (this.calculatedIIP3 !== undefined && !isNaN(this.calculatedIIP3)) {
+      const iip3Str = isFinite(this.calculatedIIP3) ? this.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
+      lines.push(`IIP3: ${iip3Str}`);
+    }
 
     this.paramDisplay.innerHTML = lines.join('<br>');
   }
@@ -126,6 +134,8 @@ class Block {
     this.calculatedPIn = undefined;
     this.calculatedPOut = undefined;
     this.calculatedNF = undefined;
+    this.calculatedOIP3 = undefined;
+    this.calculatedIIP3 = undefined;
     this.updateParamDisplay();
   }
 
