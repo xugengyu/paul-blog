@@ -2,5 +2,5 @@
   "id": "link-budget",
   "title": "Link Budget",
   "category": "Satellite Comms",
-  "content": "<p>A link budget tallies every gain and loss from transmitter to receiver: <code>C/N₀ = EIRP − FSPL − Losses + G/T − k</code>.</p><p>Key contributors: transmit power, antenna gains, free-space path loss, atmospheric attenuation, pointing errors, and receiver noise temperature. The margin between available and required C/N₀ determines link reliability.</p>"
+  "content": "<p>A link budget tallies every gain and loss from transmitter to receiver: <code>C/N₀ = EIRP − FSPL − Losses + G/T − k</code>.</p>\n<p>Key contributors: transmit power, antenna gains, free-space path loss, atmospheric attenuation, pointing errors, and receiver noise temperature. The margin between available and required C/N₀ determines link reliability.</p>\n"
 }

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Posts — Random Thoughts of a Random Guy</title>
+  <meta name="description" content="Blog posts on electrical engineering, satellite communications, RF design, and signal processing.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="nav" id="main-nav"></nav>
+
+  <!-- ====== Main content ====== -->
+  <main class="page-content">
+    <div class="posts-layout">
+
+      <!-- Posts list -->
+      <div class="posts-main" id="posts-main">
+        <div class="page-header fade-in">
+          <h1 class="page-header__title">Posts</h1>
+          <p class="page-header__subtitle">Long-form writing on electrical engineering &amp; satellite communications</p>
+        </div>
+
+{{POSTS_CONTENT}}
+
+        <p class="no-results" id="no-results">No posts match the current filters.</p>
+      </div>
+
+      <!-- Filter sidebar -->
+      <aside class="posts-sidebar fade-in fade-in-delay-2">
+        <div class="filter-section">
+          <input type="text" id="post-search" class="form-input" placeholder="Search posts..." style="width: 100%; margin-bottom: var(--space-md);">
+        </div>
+
+        <div class="filter-section">
+          <p class="filter-section__title">Filter by Tag</p>
+          <div class="filter-tags" id="filter-tags">
+            <!-- populated by posts.js -->
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <p class="filter-section__title">Filter by Month</p>
+          <div class="filter-months" id="filter-months">
+            <!-- populated by posts.js -->
+          </div>
+        </div>
+
+        <button class="filter-clear" id="filter-clear" style="display:none">✕ Clear all filters</button>
+      </aside>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Random Thoughts of a Random Guy. Built with care.</p>
+  </footer>
+
+  <script src="js/nav.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
+  <script src="js/posts.js?v=3"></script>
+</body>
+</html>

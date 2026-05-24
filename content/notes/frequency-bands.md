@@ -1,0 +1,10 @@
+---
+title: "Frequency Bands"
+category: "Satellite Comms"
+connections:
+  - modulation
+---
+
+Satellite services use ITU-allocated bands: L (1–2 GHz, mobile), S (2–4 GHz, weather radar), C (4–8 GHz, legacy VSAT), Ku (12–18 GHz, DTH TV), Ka (26–40 GHz, HTS broadband), and V/Q (40–75 GHz, next-gen).
+
+Higher bands offer more bandwidth but suffer greater rain attenuation. Ka-band rain fade can exceed 10 dB in tropical regions.

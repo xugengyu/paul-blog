@@ -1,0 +1,10 @@
+---
+title: "Signal-to-Noise Ratio"
+category: "Signal Processing"
+connections:
+  - noise-figure
+---
+
+SNR (or equivalently Eb/N₀) sets the ultimate limit on bit-error rate. Shannon's theorem says the channel capacity is <code>C = B log₂(1 + SNR)</code>.
+
+Modern LDPC and turbo codes operate within 0.5–1.5 dB of the Shannon limit. In satellite links we target a specific Eb/N₀ (e.g., 4.5 dB for QPSK rate-1/2) and add implementation and fading margins.

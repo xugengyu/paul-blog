@@ -1,0 +1,11 @@
+---
+title: "Impedance"
+category: "Fundamentals"
+connections:
+  - smith-chart
+  - impedance-matching
+---
+
+Impedance <code>Z = R + jX</code> extends resistance into the frequency domain. The real part is resistance; the imaginary part is reactance (inductive or capacitive).
+
+At RF frequencies, every trace, via, and pad has impedance. Controlled-impedance design is essential above ~100 MHz. Typical transmission-line impedance targets are 50 Ω (single-ended) and 100 Ω (differential).

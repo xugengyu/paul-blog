@@ -2,5 +2,5 @@
   "id": "dsp-basics",
   "title": "DSP Basics",
   "category": "Signal Processing",
-  "content": "<p>Digital signal processing replaces analog filters, mixers, and demodulators with mathematical operations on sampled data. Core concepts: sampling theorem (Nyquist), DFT/FFT, FIR & IIR filtering, and correlation.</p><p>In software-defined radios (SDRs), the entire receive chain from IF down-conversion onward is implemented in an FPGA or CPU, enabling flexible waveform support and rapid prototyping.</p>"
+  "content": "<p>Digital signal processing replaces analog filters, mixers, and demodulators with mathematical operations on sampled data. Core concepts: sampling theorem (Nyquist), DFT/FFT, FIR &amp; IIR filtering, and correlation.</p>\n<p>In software-defined radios (SDRs), the entire receive chain from IF down-conversion onward is implemented in an FPGA or CPU, enabling flexible waveform support and rapid prototyping.</p>\n"
 }

@@ -1,0 +1,11 @@
+---
+title: "Impedance Matching"
+category: "RF Engineering"
+connections:
+  - antenna-design
+  - rf-filters
+---
+
+Maximum power transfer occurs when the source impedance is the complex conjugate of the load. In practice we use L-networks, π-networks, or quarter-wave transformers.
+
+Mismatch causes reflections quantified by return loss (dB) or VSWR. A VSWR of 2:1 means ~11 % reflected power — often the upper limit for satellite transponder inputs.

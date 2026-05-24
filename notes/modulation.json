@@ -2,5 +2,5 @@
   "id": "modulation",
   "title": "Modulation Schemes",
   "category": "Signal Processing",
-  "content": "<p>Digital satellite links commonly use PSK and APSK modulations. DVB-S2X supports from QPSK (2 bits/symbol, robust) up to 256-APSK (8 bits/symbol, high throughput but needs >20 dB C/N).</p><p>Choosing a modulation and code rate is a trade-off between spectral efficiency and required link margin. Adaptive Coding & Modulation (ACM) adjusts in real time based on measured C/N₀.</p>"
+  "content": "<p>Digital satellite links commonly use PSK and APSK modulations. DVB-S2X supports from QPSK (2 bits/symbol, robust) up to 256-APSK (8 bits/symbol, high throughput but needs &gt;20 dB C/N).</p>\n<p>Choosing a modulation and code rate is a trade-off between spectral efficiency and required link margin. Adaptive Coding &amp; Modulation (ACM) adjusts in real time based on measured C/N₀.</p>\n"
 }

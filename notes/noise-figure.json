@@ -2,5 +2,5 @@
   "id": "noise-figure",
   "title": "Noise Figure",
   "category": "Signal Processing",
-  "content": "<p>Noise figure (NF) quantifies how much a component degrades SNR: <code>NF = SNR_in / SNR_out</code> (linear) or in dB. Friis's formula shows that the first stage dominates system NF.</p><p>A satellite LNB with NF = 0.7 dB corresponds to a noise temperature of ~50 K — critical for closing links with spacecraft EIRP as low as 40 dBW.</p>"
+  "content": "<p>Noise figure (NF) quantifies how much a component degrades SNR: <code>NF = SNR_in / SNR_out</code> (linear) or in dB. Friis&#39;s formula shows that the first stage dominates system NF.</p>\n<p>A satellite LNB with NF = 0.7 dB corresponds to a noise temperature of ~50 K — critical for closing links with spacecraft EIRP as low as 40 dBW.</p>\n"
 }

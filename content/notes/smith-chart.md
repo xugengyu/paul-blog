@@ -1,0 +1,10 @@
+---
+title: "Smith Chart"
+category: "RF Engineering"
+connections:
+  - impedance-matching
+---
+
+A graphical tool that maps complex impedance onto a unit circle via the reflection coefficient Γ. Moving clockwise along a constant-|Γ| circle corresponds to adding transmission-line length.
+
+Invaluable for matching network design — you can visually trace how series/shunt L and C elements move you from a load impedance to the 50 Ω centre.

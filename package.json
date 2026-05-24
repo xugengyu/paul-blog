@@ -1,0 +1,28 @@
+{
+  "name": "paul_blog",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "chokidar \"content/**/*.md\" -c \"npm run build\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xugengyu/paul-blog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/xugengyu/paul-blog/issues"
+  },
+  "homepage": "https://github.com/xugengyu/paul-blog#readme",
+  "dependencies": {
+    "chokidar": "^5.0.0",
+    "chokidar-cli": "^3.0.0",
+    "gray-matter": "^4.0.3",
+    "marked": "^18.0.4"
+  }
+}

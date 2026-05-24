@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Signal Integrity in High-Speed Digital Design — Random Thoughts of a Random Guy</title>
-  <meta name="description" content="Managing reflections, crosstalk, and power-delivery noise on 10+ Gbps SerDes lanes.">
+  <meta name="description" content="Managing reflections, crosstalk, and power-delivery noise on 10+ Gbps SerDes lanes — eye diagrams, S-parameters, and stackup choices.">
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
   <main class="post-detail">
     <div class="container">
       <a href="../posts.html" class="post-detail__back">← Back to posts</a>
-      <p class="post-detail__meta">January 30, 2026 · 6 min read</p>
+      <p class="post-detail__meta">Jan 29, 2026 · 3 min read</p>
       <h1 class="post-detail__title">Signal Integrity in High-Speed Digital Design</h1>
       <div class="post-detail__tags">
         <a href="../posts.html?tag=Signal%20Processing" class="tag">Signal Processing</a>
@@ -21,45 +21,44 @@
       </div>
 
       <article class="post-detail__body">
-        <p>When your data rate crosses 5 Gbps, your PCB traces stop being simple wires and start behaving like transmission lines. Welcome to the world of signal integrity — where impedance discontinuities, dielectric loss, and crosstalk conspire to close your eye diagrams.</p>
+<p>When your data rate crosses 5 Gbps, your PCB traces stop being simple wires and start behaving like transmission lines. Welcome to the world of signal integrity — where impedance discontinuities, dielectric loss, and crosstalk conspire to close your eye diagrams.</p>
+<h2>When does SI matter?</h2>
+<p>A useful rule of thumb: SI analysis is necessary when the trace length exceeds 1/6 of the signal&#39;s wavelength at its highest significant frequency. For a 10 Gbps NRZ signal, the Nyquist frequency is 5 GHz (λ ≈ 30 mm in FR-4). Any trace longer than ~5 mm needs controlled impedance and careful routing.</p>
+<h2>Reflections</h2>
+<p>Impedance mismatches cause partial signal reflections. The reflection coefficient at a discontinuity is:</p>
+<pre><code class="language-text">Γ = (Z_L − Z_0) / (Z_L + Z_0)
+</code></pre>
+<p>A via transition, connector, or IC package pad can each introduce a few ohms of impedance change. These reflections add up, creating inter-symbol interference (ISI) that degrades the eye opening. TDR (time-domain reflectometry) is the primary tool for finding and quantifying discontinuities.</p>
+<h2>Dielectric and conductor loss</h2>
+<p>At multi-GHz frequencies, insertion loss matters. Two mechanisms dominate:</p>
+<ul>
+<li><strong>Dielectric loss</strong> — proportional to frequency and the laminate&#39;s loss tangent (tan δ). Standard FR-4 has tan δ ≈ 0.02; low-loss materials like Megtron 6 offer tan δ ≈ 0.004.</li>
+<li><strong>Conductor loss</strong> — increases with √f due to the skin effect. Smoother copper (reverse-treated foil, VLP) reduces conductor loss at high frequencies.</li>
+</ul>
+<h2>Crosstalk</h2>
+<p>Adjacent traces couple through mutual capacitance and inductance. Near-end crosstalk (NEXT) appears at the driven end; far-end crosstalk (FEXT) at the far end. Mitigation strategies:</p>
+<ul>
+<li>Maintain ≥ 3× trace-width spacing (the &quot;3W rule&quot;)</li>
+<li>Use differential signalling — common-mode noise rejection helps</li>
+<li>Route sensitive lanes on different layers with orthogonal orientations</li>
+<li>Ground-reference both sides of critical traces (stripline vs microstrip)</li>
+</ul>
+<h2>Eye diagrams and channel simulation</h2>
+<p>The eye diagram is the ultimate pass/fail metric. You overlay thousands of bit intervals and look at the eye opening — the clear region in the middle. The opening must exceed the receiver&#39;s sensitivity threshold with margin.</p>
+<p>Modern SerDes channels are simulated using S-parameter models of each segment (package, via, trace, connector), cascaded together and convolved with a bit pattern. Tools like Keysight ADS, Ansys HFSS, and Cadence Sigrity make this workflow increasingly accessible.</p>
+<blockquote>
+<p>In high-speed design, the channel is the enemy and equalisation is your weapon. But a good channel is always cheaper than a complex equaliser.</p>
+</blockquote>
+<p>Signal integrity is where analog, digital, and electromagnetic disciplines converge. If you&#39;re designing boards above 5 Gbps, invest the time to learn it properly — your eye diagrams will thank you.</p>
 
-        <h2>When does SI matter?</h2>
-        <p>A useful rule of thumb: SI analysis is necessary when the trace length exceeds 1/6 of the signal's wavelength at its highest significant frequency. For a 10 Gbps NRZ signal, the Nyquist frequency is 5 GHz (λ ≈ 30 mm in FR-4). Any trace longer than ~5 mm needs controlled impedance and careful routing.</p>
-
-        <h2>Reflections</h2>
-        <p>Impedance mismatches cause partial signal reflections. The reflection coefficient at a discontinuity is:</p>
-        <pre><code>Γ = (Z_L − Z_0) / (Z_L + Z_0)</code></pre>
-        <p>A via transition, connector, or IC package pad can each introduce a few ohms of impedance change. These reflections add up, creating inter-symbol interference (ISI) that degrades the eye opening. TDR (time-domain reflectometry) is the primary tool for finding and quantifying discontinuities.</p>
-
-        <h2>Dielectric and conductor loss</h2>
-        <p>At multi-GHz frequencies, insertion loss matters. Two mechanisms dominate:</p>
-        <ul>
-          <li><strong>Dielectric loss</strong> — proportional to frequency and the laminate's loss tangent (tan δ). Standard FR-4 has tan δ ≈ 0.02; low-loss materials like Megtron 6 offer tan δ ≈ 0.004.</li>
-          <li><strong>Conductor loss</strong> — increases with √f due to the skin effect. Smoother copper (reverse-treated foil, VLP) reduces conductor loss at high frequencies.</li>
-        </ul>
-
-        <h2>Crosstalk</h2>
-        <p>Adjacent traces couple through mutual capacitance and inductance. Near-end crosstalk (NEXT) appears at the driven end; far-end crosstalk (FEXT) at the far end. Mitigation strategies:</p>
-        <ul>
-          <li>Maintain ≥ 3× trace-width spacing (the "3W rule")</li>
-          <li>Use differential signalling — common-mode noise rejection helps</li>
-          <li>Route sensitive lanes on different layers with orthogonal orientations</li>
-          <li>Ground-reference both sides of critical traces (stripline vs microstrip)</li>
-        </ul>
-
-        <h2>Eye diagrams and channel simulation</h2>
-        <p>The eye diagram is the ultimate pass/fail metric. You overlay thousands of bit intervals and look at the eye opening — the clear region in the middle. The opening must exceed the receiver's sensitivity threshold with margin.</p>
-        <p>Modern SerDes channels are simulated using S-parameter models of each segment (package, via, trace, connector), cascaded together and convolved with a bit pattern. Tools like Keysight ADS, Ansys HFSS, and Cadence Sigrity make this workflow increasingly accessible.</p>
-
-        <blockquote>In high-speed design, the channel is the enemy and equalisation is your weapon. But a good channel is always cheaper than a complex equaliser.</blockquote>
-
-        <p>Signal integrity is where analog, digital, and electromagnetic disciplines converge. If you're designing boards above 5 Gbps, invest the time to learn it properly — your eye diagrams will thank you.</p>
       </article>
     </div>
   </main>
 
-  <footer class="footer"><p class="footer__text">© 2026 Random Thoughts of a Random Guy</p></footer>
-  <script src="../js/nav.js"></script>
-  <script src="../js/main.js"></script>
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Random Thoughts of a Random Guy. Built with care.</p>
+  </footer>
+  <script src="../js/nav.js?v=3"></script>
+  <script src="../js/main.js?v=3"></script>
 </body>
 </html>

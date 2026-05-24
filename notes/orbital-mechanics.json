@@ -2,5 +2,5 @@
   "id": "orbital-mechanics",
   "title": "Orbital Mechanics",
   "category": "Satellite Comms",
-  "content": "<p>Kepler's laws govern satellite motion. Key orbits: LEO (200–2 000 km, 90–120 min period), MEO (2 000–35 786 km), and GEO (35 786 km, 24 h period, 0° inclination).</p><p>Orbital velocity at LEO is ~7.8 km/s; at GEO it's ~3.1 km/s. ΔV budgets, eclipse durations, and radiation environment all depend on altitude.</p>"
+  "content": "<p>Kepler&#39;s laws govern satellite motion. Key orbits: LEO (200–2 000 km, 90–120 min period), MEO (2 000–35 786 km), and GEO (35 786 km, 24 h period, 0° inclination).</p>\n<p>Orbital velocity at LEO is ~7.8 km/s; at GEO it&#39;s ~3.1 km/s. ΔV budgets, eclipse durations, and radiation environment all depend on altitude.</p>\n"
 }

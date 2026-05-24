@@ -13,7 +13,7 @@
   <main class="post-detail">
     <div class="container">
       <a href="../posts.html" class="post-detail__back">← Back to posts</a>
-      <p class="post-detail__meta">February 14, 2026 · 7 min read</p>
+      <p class="post-detail__meta">Feb 13, 2026 · 3 min read</p>
       <h1 class="post-detail__title">Introduction to RF Filter Design</h1>
       <div class="post-detail__tags">
         <a href="../posts.html?tag=RF%20Engineering" class="tag">RF Engineering</a>
@@ -21,51 +21,64 @@
       </div>
 
       <article class="post-detail__body">
-        <p>Filters are the gatekeepers of any RF receiver chain. They let desired signals pass while rejecting interference, out-of-band noise, and spurious emissions. Getting the filter right can mean the difference between a clean 12-dB SINAD demodulated signal and an unusable mess of intermod products.</p>
+<p>Filters are the gatekeepers of any RF receiver chain. They let desired signals pass while rejecting interference, out-of-band noise, and spurious emissions. Getting the filter right can mean the difference between a clean 12-dB SINAD demodulated signal and an unusable mess of intermod products.</p>
+<pre><code>    ## Filter families
+    Most classical filter designs fall into three families:
 
-        <h2>Filter families</h2>
-        <p>Most classical filter designs fall into three families:</p>
-        <ul>
-          <li><strong>Butterworth</strong> — maximally flat passband, gentle roll-off. Good when amplitude ripple is unacceptable (e.g., wideband instrumentation).</li>
-          <li><strong>Chebyshev Type I</strong> — equi-ripple passband, steeper transition band. The workhorse of RF front-ends; typical passband ripple is 0.1–0.5 dB.</li>
-          <li><strong>Elliptic (Cauer)</strong> — equi-ripple in both passband and stopband, sharpest possible transition for a given order. Used when nearby interferers need aggressive rejection.</li>
-        </ul>
 
-        <h2>Lumped-element vs distributed</h2>
-        <p>At frequencies below ~1 GHz, filters are typically built from discrete inductors and capacitors. Above a few GHz, component parasitics (self-resonance, lead inductance) make lumped designs impractical. Distributed designs use transmission-line resonators:</p>
-        <ul>
-          <li><strong>Coupled-line</strong> — parallel edge-coupled microstrip lines form bandpass sections</li>
-          <li><strong>Hairpin</strong> — folded coupled lines for compact layout</li>
-          <li><strong>Interdigital</strong> — grounded resonators alternating direction for tight coupling control</li>
-          <li><strong>Cavity/waveguide</strong> — lowest loss at the highest frequencies (satellite transponders)</li>
-        </ul>
+    &lt;ul&gt;
+      &lt;li&gt;&lt;strong&gt;Butterworth&lt;/strong&gt; — maximally flat passband, gentle roll-off. Good when amplitude ripple is unacceptable (e.g., wideband instrumentation).&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;Chebyshev Type I&lt;/strong&gt; — equi-ripple passband, steeper transition band. The workhorse of RF front-ends; typical passband ripple is 0.1–0.5 dB.&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;Elliptic (Cauer)&lt;/strong&gt; — equi-ripple in both passband and stopband, sharpest possible transition for a given order. Used when nearby interferers need aggressive rejection.&lt;/li&gt;
+    &lt;/ul&gt;
 
-        <h2>Practical design flow</h2>
-        <p>A typical RF filter design proceeds as follows:</p>
-        <ol>
-          <li>Define specifications: centre frequency, bandwidth, passband ripple, stopband rejection, insertion loss</li>
-          <li>Choose the filter family and determine the required order (number of resonators)</li>
-          <li>Look up normalised prototype element values (g-values) from tables</li>
-          <li>Apply frequency and impedance scaling transforms</li>
-          <li>Simulate in a circuit simulator (ADS, Microwave Office, QUCS)</li>
-          <li>For distributed designs: perform EM simulation (Sonnet, HFSS, CST) to capture coupling and discontinuity effects</li>
-          <li>Fabricate and measure — tune if needed</li>
-        </ol>
+    ## Lumped-element vs distributed
+    At frequencies below ~1 GHz, filters are typically built from discrete inductors and capacitors. Above a few GHz, component parasitics (self-resonance, lead inductance) make lumped designs impractical. Distributed designs use transmission-line resonators:
 
-        <h2>Insertion loss budget</h2>
-        <p>Every filter introduces loss. For a Chebyshev bandpass filter, the midband insertion loss scales roughly as:</p>
-        <pre><code>IL ≈ 4.343 × N × f₀ / (BW × Q_u)   dB</code></pre>
-        <p>Where N is the filter order, f₀ is centre frequency, BW is bandwidth, and Q_u is the unloaded Q of each resonator. A 5th-order filter at 10 GHz with 500 MHz bandwidth and resonator Q of 200 gives about 4.3 dB insertion loss — significant, but manageable if your LNA has enough gain ahead of it.</p>
 
-        <blockquote>Remember: in a receiver chain, every dB of filter loss adds directly to your system noise figure if the filter precedes the LNA.</blockquote>
+    &lt;ul&gt;
+      &lt;li&gt;&lt;strong&gt;Coupled-line&lt;/strong&gt; — parallel edge-coupled microstrip lines form bandpass sections&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;Hairpin&lt;/strong&gt; — folded coupled lines for compact layout&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;Interdigital&lt;/strong&gt; — grounded resonators alternating direction for tight coupling control&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;Cavity/waveguide&lt;/strong&gt; — lowest loss at the highest frequencies (satellite transponders)&lt;/li&gt;
+    &lt;/ul&gt;
 
-        <p>Filter design is a deep and rewarding discipline. Start with Matthaei, Young &amp; Jones's classic text — it remains the definitive reference after sixty years.</p>
+    ## Practical design flow
+    A typical RF filter design proceeds as follows:
+
+
+    &lt;ol&gt;
+      &lt;li&gt;Define specifications: centre frequency, bandwidth, passband ripple, stopband rejection, insertion loss&lt;/li&gt;
+      &lt;li&gt;Choose the filter family and determine the required order (number of resonators)&lt;/li&gt;
+      &lt;li&gt;Look up normalised prototype element values (g-values) from tables&lt;/li&gt;
+      &lt;li&gt;Apply frequency and impedance scaling transforms&lt;/li&gt;
+      &lt;li&gt;Simulate in a circuit simulator (ADS, Microwave Office, QUCS)&lt;/li&gt;
+      &lt;li&gt;For distributed designs: perform EM simulation (Sonnet, HFSS, CST) to capture coupling and discontinuity effects&lt;/li&gt;
+      &lt;li&gt;Fabricate and measure — tune if needed&lt;/li&gt;
+    &lt;/ol&gt;
+
+    ## Insertion loss budget
+    Every filter introduces loss. For a Chebyshev bandpass filter, the midband insertion loss scales roughly as:
+
+
+    &lt;pre&gt;&lt;code&gt;IL ≈ 4.343 × N × f₀ / (BW × Q_u)   dB&lt;/code&gt;&lt;/pre&gt;
+    Where N is the filter order, f₀ is centre frequency, BW is bandwidth, and Q_u is the unloaded Q of each resonator. A 5th-order filter at 10 GHz with 500 MHz bandwidth and resonator Q of 200 gives about 4.3 dB insertion loss — significant, but manageable if your LNA has enough gain ahead of it.
+
+
+
+    &lt;blockquote&gt;Remember: in a receiver chain, every dB of filter loss adds directly to your system noise figure if the filter precedes the LNA.&lt;/blockquote&gt;
+
+    Filter design is a deep and rewarding discipline. Start with Matthaei, Young &amp;amp; Jones&#39;s classic text — it remains the definitive reference after sixty years.
+</code></pre>
+
       </article>
     </div>
   </main>
 
-  <footer class="footer"><p class="footer__text">© 2026 Random Thoughts of a Random Guy</p></footer>
-  <script src="../js/nav.js"></script>
-  <script src="../js/main.js"></script>
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Random Thoughts of a Random Guy. Built with care.</p>
+  </footer>
+  <script src="../js/nav.js?v=3"></script>
+  <script src="../js/main.js?v=3"></script>
 </body>
 </html>

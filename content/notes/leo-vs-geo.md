@@ -1,0 +1,8 @@
+---
+title: "LEO vs GEO"
+category: "Satellite Comms"
+---
+
+<strong>LEO</strong>: low latency (5–20 ms), lower FSPL, but needs large constellations for continuous coverage and frequent handovers. <strong>GEO</strong>: always visible from a fixed ground antenna (no tracking), but 240 ms round-trip delay and ~6 dB more path loss than LEO at the same frequency.
+
+Modern HTS GEO and mega-LEO constellations (Starlink, Kuiper) each have trade-offs in cost, spectrum reuse, and ground-segment complexity.

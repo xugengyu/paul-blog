@@ -1,0 +1,10 @@
+---
+title: "RF Filters"
+category: "RF Engineering"
+connections:
+  - dsp-basics
+---
+
+Filters select or reject frequency bands. Common topologies: Butterworth (maximally flat passband), Chebyshev (steeper roll-off, passband ripple), and elliptic (steep roll-off, passband & stopband ripple).
+
+At microwave frequencies, distributed designs (coupled-line, hairpin, interdigital) replace lumped LC elements because component parasitics dominate.
