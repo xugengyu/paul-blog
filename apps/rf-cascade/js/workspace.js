@@ -171,6 +171,7 @@ const Workspace = {
       blocks: Array.from(this.selectedBlocks).map(b => ({
         relId: b.id,
         type: b.type,
+        name: b.name,
         params: JSON.parse(JSON.stringify(b.params)),
         w: b.element ? b.element.offsetWidth : 120,
         h: b.element ? b.element.offsetHeight : 80,
@@ -207,6 +208,7 @@ const Workspace = {
       
       const newBlock = this.addBlock(cb.type, px, py);
       if (newBlock) {
+        newBlock.name = cb.name;
         newBlock.params = JSON.parse(JSON.stringify(cb.params));
         if (newBlock.element) {
           newBlock.element.style.width = cb.w + 'px';
@@ -261,6 +263,7 @@ const Workspace = {
       blocks: this.blocks.map(b => ({
         id: b.id,
         type: b.type,
+        name: b.name,
         x: b.x,
         y: b.y,
         w: b.element ? b.element.offsetWidth : 120,
@@ -317,6 +320,7 @@ const Workspace = {
     data.blocks.forEach(b => {
       const newBlock = this.addBlock(b.type, b.x, b.y, b.id);
       if (newBlock) {
+        newBlock.name = b.name;
         newBlock.params = JSON.parse(JSON.stringify(b.params));
         if (b.w && newBlock.element) newBlock.element.style.width = b.w + 'px';
         if (b.h && newBlock.element) newBlock.element.style.height = b.h + 'px';

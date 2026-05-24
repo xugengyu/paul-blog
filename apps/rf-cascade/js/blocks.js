@@ -2,6 +2,7 @@ class Block {
   constructor(id, type, x, y) {
     this.id = id;
     this.type = type;
+    this.name = undefined;
     this.x = x;
     this.y = y;
     this.params = {};
@@ -32,7 +33,7 @@ class Block {
     // Header
     const header = document.createElement('div');
     header.className = 'rf-block__header';
-    header.textContent = this.type;
+    header.textContent = this.name || this.type;
     this.element.appendChild(header);
 
     // Body
@@ -165,6 +166,16 @@ class Block {
     if (this.element) {
       this.element.style.left = this.x + 'px';
       this.element.style.top = this.y + 'px';
+    }
+  }
+
+  rename(newName) {
+    this.name = newName || undefined;
+    if (this.element) {
+      const header = this.element.querySelector('.rf-block__header');
+      if (header) {
+        header.textContent = this.name || this.type;
+      }
     }
   }
 

@@ -131,6 +131,18 @@ const App = {
       }
     });
     
+    document.getElementById('menu-rename').addEventListener('click', () => {
+      this.hideContextMenu();
+      if (this.activeBlock) {
+        const currentName = this.activeBlock.name || this.activeBlock.type;
+        const newName = prompt(`Rename block from "${currentName}":`, currentName);
+        if (newName !== null) {
+          this.activeBlock.rename(newName.trim());
+          this.calculateCascade();
+        }
+      }
+    });
+    
     document.getElementById('menu-delete').addEventListener('click', () => {
       this.hideContextMenu();
       if (this.activeBlock) {
@@ -186,11 +198,15 @@ const App = {
     const menuPaste = document.getElementById('menu-paste');
     const menuDeleteSel = document.getElementById('menu-delete-sel');
 
+    const menuRename = document.getElementById('menu-rename');
+
     if (block && selBlocksCount <= 1 && selWiresCount === 0) {
       menuEdit.style.display = 'block';
+      menuRename.style.display = 'block';
       menuDelete.style.display = 'block';
     } else {
       menuEdit.style.display = 'none';
+      menuRename.style.display = 'none';
       menuDelete.style.display = 'none';
     }
 
