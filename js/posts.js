@@ -20,6 +20,24 @@
     });
   }
 
+  // ---- Read URL parameters ----
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialTag = urlParams.get('tag');
+
+  // ---- Setup clickable tags on post cards ----
+  cards.forEach(function (card) {
+    card.querySelectorAll('.tag').forEach(function (tagEl) {
+      tagEl.style.cursor = 'pointer';
+      tagEl.style.position = 'relative';
+      tagEl.style.zIndex = '2';
+      tagEl.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = '?tag=' + encodeURIComponent(tagEl.textContent.trim());
+      });
+    });
+  });
+
   // ---- Build unique tags & months from DOM ----
   const tagSet = new Set();
   const monthSet = new Set();
@@ -40,12 +58,19 @@
     btn.className = 'filter-tag';
     btn.textContent = tag;
     btn.dataset.tag = tag;
+    if (tag === initialTag) {
+      btn.classList.add('filter-tag--active');
+    }
     btn.addEventListener('click', function () {
       btn.classList.toggle('filter-tag--active');
       applyFilters();
     });
     tagContainer.appendChild(btn);
   });
+
+  if (initialTag) {
+    applyFilters();
+  }
 
   // ---- Render month buttons ----
   const monthNames = [
