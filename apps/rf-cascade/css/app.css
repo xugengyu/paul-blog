@@ -78,18 +78,31 @@ html, body {
 }
 
 .sidebar-resizer {
-  width: 4px;
-  background-color: var(--border-color);
+  width: 8px;
   cursor: col-resize;
   z-index: 100;
-  transition: background-color 0.2s;
   flex-shrink: 0;
   user-select: none;
+  position: relative;
+  background: transparent;
 }
 
-.sidebar-resizer:hover,
-.sidebar-resizer.resizing {
+.sidebar-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+  background-color: var(--border-color);
+  transition: background-color 0.2s, width 0.2s, left 0.2s;
+}
+
+.sidebar-resizer:hover::after,
+.sidebar-resizer.resizing::after {
   background-color: #3498db;
+  width: 4px;
+  left: 2px;
 }
 
 .sidebar-title {
