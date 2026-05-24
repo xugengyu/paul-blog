@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Understanding Satellite Link Budgets — Paul X</title>
+  <meta name="description" content="End-to-end link budget analysis for LEO and GEO satellites covering EIRP, path loss, G/T, and C/N₀.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav"><div class="nav__inner">
+    <a href="../index.html" class="nav__logo">paul x</a>
+    <div class="nav__menu" id="nav-menu"><ul class="nav__links">
+      <li><a href="../index.html" class="nav__link">About</a></li>
+      <li><a href="../posts.html" class="nav__link nav__link--active">Posts</a></li>
+      <li><a href="../notes.html" class="nav__link">Notes</a></li>
+      <li><a href="../contact.html" class="nav__link">Contact</a></li>
+      <li><button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></li>
+    </ul></div>
+  </div></nav>
+
+  <main class="post-detail">
+    <div class="container">
+      <a href="../posts.html" class="post-detail__back">← Back to posts</a>
+      <p class="post-detail__meta">May 15, 2026 · 8 min read</p>
+      <h1 class="post-detail__title">Understanding Satellite Link Budgets</h1>
+      <div class="post-detail__tags">
+        <span class="tag">Satellite Comms</span>
+        <span class="tag">RF Engineering</span>
+      </div>
+
+      <article class="post-detail__body">
+        <p>A link budget is the single most important analysis in satellite communications engineering. It's a ledger that accounts for every dB of gain and loss between a transmitter and a receiver, ultimately telling you whether your link will close with adequate margin — or not.</p>
+
+        <h2>The fundamental equation</h2>
+        <p>At its core the link budget computes the carrier-to-noise-density ratio at the receiver:</p>
+        <pre><code>C/N₀ (dB·Hz) = EIRP − FSPL − L_misc + G/T − k</code></pre>
+        <p>Where:</p>
+        <ul>
+          <li><strong>EIRP</strong> — Effective Isotropic Radiated Power (dBW): transmitter power + antenna gain</li>
+          <li><strong>FSPL</strong> — Free-Space Path Loss (dB): the inverse-square-law spreading</li>
+          <li><strong>L_misc</strong> — Miscellaneous losses: atmospheric, rain, polarisation mismatch, pointing error</li>
+          <li><strong>G/T</strong> — Receiver figure of merit (dB/K): antenna gain minus system noise temperature</li>
+          <li><strong>k</strong> — Boltzmann's constant: −228.6 dBW/K/Hz</li>
+        </ul>
+
+        <h2>Working a GEO example</h2>
+        <p>Consider a Ku-band (12 GHz) DTH broadcast from a GEO satellite at 36 000 km. The satellite EIRP is 52 dBW over a shaped beam.</p>
+        <pre><code>FSPL = 20 log₁₀(36 000) + 20 log₁₀(12 000) + 32.45
+     = 91.1 + 81.6 + 32.45
+     = 205.2 dB</code></pre>
+        <p>With a 60 cm consumer dish (G ≈ 33 dBi, T_sys ≈ 150 K → G/T ≈ 11.2 dB/K), clear-sky atmospheric loss of 0.5 dB, and pointing loss of 0.3 dB:</p>
+        <pre><code>C/N₀ = 52 − 205.2 − 0.8 + 11.2 − (−228.6)
+     = 85.8 dB·Hz</code></pre>
+        <p>For a DVB-S2 QPSK rate-3/4 carrier occupying 36 MHz, the required Eb/N₀ is about 4.7 dB, which translates to a required C/N₀ of roughly 81 dB·Hz. That gives us a healthy <strong>4.8 dB margin</strong> — enough to ride through moderate rain fade.</p>
+
+        <h2>LEO constellation considerations</h2>
+        <p>LEO links benefit from 15–20 dB less path loss compared to GEO, but introduce challenges:</p>
+        <ul>
+          <li>Doppler shift can exceed ±500 kHz at Ka-band</li>
+          <li>Elevation angle varies continuously, changing atmospheric path length</li>
+          <li>Handover between satellites must be seamless</li>
+          <li>Ground antennas need tracking capability (phased arrays or mechanically steered)</li>
+        </ul>
+        <p>Despite these complexities, the lower path loss means LEO systems can use smaller spacecraft antennas and lower transmit power while still achieving high data rates — a key advantage driving the current mega-constellation boom.</p>
+
+        <h2>Rain fade and availability</h2>
+        <p>Rain attenuation increases roughly with frequency squared. At Ka-band, a moderate 25 mm/hr rainfall can attenuate the signal by 8–12 dB, consuming your entire clear-sky margin. Operators combat this with:</p>
+        <ul>
+          <li><strong>Adaptive Coding &amp; Modulation (ACM)</strong> — dynamically reducing throughput to maintain the link</li>
+          <li><strong>Site diversity</strong> — routing traffic to geographically separated ground stations</li>
+          <li><strong>Power control</strong> — the spacecraft increases EIRP toward affected beams</li>
+        </ul>
+
+        <h2>Conclusion</h2>
+        <p>A well-constructed link budget is more than arithmetic — it forces you to confront every assumption about your system. Get comfortable with building and iterating on link budgets early; it's the lingua franca of satellite system engineering.</p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer"><p class="footer__text">© 2026 Paul X</p></footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCB Design for High-Frequency Circuits — Paul X</title>
+  <meta name="description" content="Practical tips for laying out RF traces, choosing substrates, and managing impedance in multi-GHz board design.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav"><div class="nav__inner">
+    <a href="../index.html" class="nav__logo">paul x</a>
+    <div class="nav__menu" id="nav-menu"><ul class="nav__links">
+      <li><a href="../index.html" class="nav__link">About</a></li>
+      <li><a href="../posts.html" class="nav__link nav__link--active">Posts</a></li>
+      <li><a href="../notes.html" class="nav__link">Notes</a></li>
+      <li><a href="../contact.html" class="nav__link">Contact</a></li>
+      <li><button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></li>
+    </ul></div>
+  </div></nav>
+
+  <main class="post-detail">
+    <div class="container">
+      <a href="../posts.html" class="post-detail__back">← Back to posts</a>
+      <p class="post-detail__meta">April 8, 2026 · 7 min read</p>
+      <h1 class="post-detail__title">PCB Design for High-Frequency Circuits</h1>
+      <div class="post-detail__tags">
+        <span class="tag">PCB Design</span>
+        <span class="tag">RF Engineering</span>
+      </div>
+
+      <article class="post-detail__body">
+        <p>Once your operating frequency crosses a few hundred MHz, PCB layout stops being a wiring exercise and becomes an electromagnetic design problem. Every trace is a transmission line, every via is an inductor, and every copper pour has resonant modes you didn't ask for.</p>
+
+        <h2>Substrate selection matters</h2>
+        <p>Standard FR-4 has a loss tangent (tan δ) of about 0.02 at 1 GHz — which may be acceptable for digital signals but introduces significant insertion loss for RF paths at Ku-band and above. Consider:</p>
+        <ul>
+          <li><strong>Rogers RO4350B</strong> (tan δ ≈ 0.004) — a popular mid-range RF laminate</li>
+          <li><strong>Rogers RT/duroid 5880</strong> (tan δ ≈ 0.0009) — excellent for mmWave, but fragile and expensive</li>
+          <li><strong>Megtron 6</strong> (tan δ ≈ 0.004) — good for mixed-signal boards with both high-speed digital and RF</li>
+        </ul>
+
+        <h2>Controlled impedance</h2>
+        <p>Use a 2D field solver (not the rough IPC formula) to calculate trace widths for your target impedance. A typical 50 Ω microstrip on 8-mil RO4350B (εr = 3.66) needs a trace width of about 17.5 mil. Always request impedance coupons from your fabricator and verify with TDR.</p>
+
+        <h2>Via transitions</h2>
+        <p>Every signal via is a discontinuity. At frequencies above 5 GHz, the inductance of a single via can cause 1–2 dB of return loss. Mitigations include:</p>
+        <ul>
+          <li>Using multiple ground vias (stitching vias) around each signal via</li>
+          <li>Back-drilling unused via stubs to reduce resonance</li>
+          <li>Adding anti-pads optimised for the transition impedance</li>
+        </ul>
+
+        <h2>Grounding and decoupling</h2>
+        <p>Maintain a continuous ground plane directly beneath all RF traces. Any slot in the ground — from a misplaced trace on an adjacent layer — creates a slot antenna that radiates and couples.</p>
+        <p>Place decoupling capacitors as close to IC power pins as physically possible, and use the lowest-inductance pad geometry. At >1 GHz, the capacitor's ESL (equivalent series inductance) often matters more than its capacitance value.</p>
+
+        <h2>Practical checklist</h2>
+        <ul>
+          <li>Minimise trace length on RF paths — every mm counts at mmWave</li>
+          <li>Avoid right-angle bends; use 45° mitred bends or smooth arcs</li>
+          <li>Keep RF traces away from digital switching noise</li>
+          <li>Use ground-backed coplanar waveguide (GCPW) for better shielding</li>
+          <li>Simulate in a 3D EM tool (HFSS, CST) before committing to fabrication</li>
+        </ul>
+
+        <blockquote>The best RF PCB is one where every design choice has a simulation behind it.</blockquote>
+
+        <p>High-frequency PCB design is part art, part physics. The good news: with modern simulation tools and low-loss laminates, it's never been more accessible.</p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer"><p class="footer__text">© 2026 Paul X</p></footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

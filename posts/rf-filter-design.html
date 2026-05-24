@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Introduction to RF Filter Design — Paul X</title>
+  <meta name="description" content="From Butterworth to Chebyshev — designing lumped-element and distributed filters for receiver front-ends.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav"><div class="nav__inner">
+    <a href="../index.html" class="nav__logo">paul x</a>
+    <div class="nav__menu" id="nav-menu"><ul class="nav__links">
+      <li><a href="../index.html" class="nav__link">About</a></li>
+      <li><a href="../posts.html" class="nav__link nav__link--active">Posts</a></li>
+      <li><a href="../notes.html" class="nav__link">Notes</a></li>
+      <li><a href="../contact.html" class="nav__link">Contact</a></li>
+      <li><button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></li>
+    </ul></div>
+  </div></nav>
+
+  <main class="post-detail">
+    <div class="container">
+      <a href="../posts.html" class="post-detail__back">← Back to posts</a>
+      <p class="post-detail__meta">February 14, 2026 · 7 min read</p>
+      <h1 class="post-detail__title">Introduction to RF Filter Design</h1>
+      <div class="post-detail__tags">
+        <span class="tag">RF Engineering</span>
+        <span class="tag">Electronics</span>
+      </div>
+
+      <article class="post-detail__body">
+        <p>Filters are the gatekeepers of any RF receiver chain. They let desired signals pass while rejecting interference, out-of-band noise, and spurious emissions. Getting the filter right can mean the difference between a clean 12-dB SINAD demodulated signal and an unusable mess of intermod products.</p>
+
+        <h2>Filter families</h2>
+        <p>Most classical filter designs fall into three families:</p>
+        <ul>
+          <li><strong>Butterworth</strong> — maximally flat passband, gentle roll-off. Good when amplitude ripple is unacceptable (e.g., wideband instrumentation).</li>
+          <li><strong>Chebyshev Type I</strong> — equi-ripple passband, steeper transition band. The workhorse of RF front-ends; typical passband ripple is 0.1–0.5 dB.</li>
+          <li><strong>Elliptic (Cauer)</strong> — equi-ripple in both passband and stopband, sharpest possible transition for a given order. Used when nearby interferers need aggressive rejection.</li>
+        </ul>
+
+        <h2>Lumped-element vs distributed</h2>
+        <p>At frequencies below ~1 GHz, filters are typically built from discrete inductors and capacitors. Above a few GHz, component parasitics (self-resonance, lead inductance) make lumped designs impractical. Distributed designs use transmission-line resonators:</p>
+        <ul>
+          <li><strong>Coupled-line</strong> — parallel edge-coupled microstrip lines form bandpass sections</li>
+          <li><strong>Hairpin</strong> — folded coupled lines for compact layout</li>
+          <li><strong>Interdigital</strong> — grounded resonators alternating direction for tight coupling control</li>
+          <li><strong>Cavity/waveguide</strong> — lowest loss at the highest frequencies (satellite transponders)</li>
+        </ul>
+
+        <h2>Practical design flow</h2>
+        <p>A typical RF filter design proceeds as follows:</p>
+        <ol>
+          <li>Define specifications: centre frequency, bandwidth, passband ripple, stopband rejection, insertion loss</li>
+          <li>Choose the filter family and determine the required order (number of resonators)</li>
+          <li>Look up normalised prototype element values (g-values) from tables</li>
+          <li>Apply frequency and impedance scaling transforms</li>
+          <li>Simulate in a circuit simulator (ADS, Microwave Office, QUCS)</li>
+          <li>For distributed designs: perform EM simulation (Sonnet, HFSS, CST) to capture coupling and discontinuity effects</li>
+          <li>Fabricate and measure — tune if needed</li>
+        </ol>
+
+        <h2>Insertion loss budget</h2>
+        <p>Every filter introduces loss. For a Chebyshev bandpass filter, the midband insertion loss scales roughly as:</p>
+        <pre><code>IL ≈ 4.343 × N × f₀ / (BW × Q_u)   dB</code></pre>
+        <p>Where N is the filter order, f₀ is centre frequency, BW is bandwidth, and Q_u is the unloaded Q of each resonator. A 5th-order filter at 10 GHz with 500 MHz bandwidth and resonator Q of 200 gives about 4.3 dB insertion loss — significant, but manageable if your LNA has enough gain ahead of it.</p>
+
+        <blockquote>Remember: in a receiver chain, every dB of filter loss adds directly to your system noise figure if the filter precedes the LNA.</blockquote>
+
+        <p>Filter design is a deep and rewarding discipline. Start with Matthaei, Young &amp; Jones's classic text — it remains the definitive reference after sixty years.</p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer"><p class="footer__text">© 2026 Paul X</p></footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

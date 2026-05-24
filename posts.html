@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Posts — Paul X</title>
+  <meta name="description" content="Blog posts on electrical engineering, satellite communications, RF design, and signal processing.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="nav" id="main-nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">paul x</a>
+      <button class="nav__hamburger" id="nav-hamburger" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="nav__menu" id="nav-menu">
+        <ul class="nav__links">
+          <li><a href="index.html" class="nav__link">About</a></li>
+          <li><a href="posts.html" class="nav__link nav__link--active">Posts</a></li>
+          <li><a href="notes.html" class="nav__link">Notes</a></li>
+          <li><a href="apps.html" class="nav__link">Apps</a></li>
+          <li><a href="contact.html" class="nav__link">Contact</a></li>
+          <li>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ====== Main content ====== -->
+  <main class="page-content">
+    <div class="posts-layout">
+
+      <!-- Posts list -->
+      <div class="posts-main" id="posts-main">
+        <div class="page-header fade-in">
+          <h1 class="page-header__title">Posts</h1>
+          <p class="page-header__subtitle">Long-form writing on electrical engineering &amp; satellite communications</p>
+        </div>
+
+        <!-- 2026 -->
+        <div class="year-group fade-in fade-in-delay-1" data-year="2026">
+          <p class="year-group__label">2026</p>
+
+          <a href="posts/satellite-link-budgets.html" target="_blank" class="post-card"
+             data-tags="Satellite Comms,RF Engineering" data-month="2026-05">
+            <div class="post-card__header">
+              <span class="post-card__title">Understanding Satellite Link Budgets</span>
+              <span class="post-card__date">May 15, 2026</span>
+            </div>
+            <p class="post-card__excerpt">A walkthrough of end-to-end link budget analysis for LEO and GEO satellites, covering EIRP, path loss, G/T, and required C/N₀ with worked examples.</p>
+            <div class="post-card__tags">
+              <span class="tag">Satellite Comms</span>
+              <span class="tag">RF Engineering</span>
+            </div>
+          </a>
+
+          <a href="posts/pcb-design-high-freq.html" target="_blank" class="post-card"
+             data-tags="PCB Design,RF Engineering" data-month="2026-04">
+            <div class="post-card__header">
+              <span class="post-card__title">PCB Design for High-Frequency Circuits</span>
+              <span class="post-card__date">Apr 8, 2026</span>
+            </div>
+            <p class="post-card__excerpt">Practical tips for laying out RF traces, choosing substrates, managing impedance, and avoiding common pitfalls in multi-GHz board design.</p>
+            <div class="post-card__tags">
+              <span class="tag">PCB Design</span>
+              <span class="tag">RF Engineering</span>
+            </div>
+          </a>
+
+          <a href="posts/leo-vs-geo.html" target="_blank" class="post-card"
+             data-tags="Satellite Comms,Orbital Mechanics" data-month="2026-03">
+            <div class="post-card__header">
+              <span class="post-card__title">LEO vs GEO: Choosing the Right Orbit</span>
+              <span class="post-card__date">Mar 22, 2026</span>
+            </div>
+            <p class="post-card__excerpt">Comparing low-Earth and geostationary orbits for communications payloads — latency, coverage, link margins, and constellation trade-offs.</p>
+            <div class="post-card__tags">
+              <span class="tag">Satellite Comms</span>
+              <span class="tag">Orbital Mechanics</span>
+            </div>
+          </a>
+
+          <a href="posts/rf-filter-design.html" target="_blank" class="post-card"
+             data-tags="RF Engineering,Electronics" data-month="2026-02">
+            <div class="post-card__header">
+              <span class="post-card__title">Introduction to RF Filter Design</span>
+              <span class="post-card__date">Feb 14, 2026</span>
+            </div>
+            <p class="post-card__excerpt">From Butterworth to Chebyshev — designing lumped-element and distributed filters for receiver front-ends with practical insertion-loss targets.</p>
+            <div class="post-card__tags">
+              <span class="tag">RF Engineering</span>
+              <span class="tag">Electronics</span>
+            </div>
+          </a>
+
+          <a href="posts/signal-integrity.html" target="_blank" class="post-card"
+             data-tags="Signal Processing,PCB Design" data-month="2026-01">
+            <div class="post-card__header">
+              <span class="post-card__title">Signal Integrity in High-Speed Digital Design</span>
+              <span class="post-card__date">Jan 30, 2026</span>
+            </div>
+            <p class="post-card__excerpt">Managing reflections, crosstalk, and power-delivery noise on 10+ Gbps SerDes lanes — eye diagrams, S-parameters, and stackup choices.</p>
+            <div class="post-card__tags">
+              <span class="tag">Signal Processing</span>
+              <span class="tag">PCB Design</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- 2025 -->
+        <div class="year-group fade-in fade-in-delay-2" data-year="2025">
+          <p class="year-group__label">2025</p>
+
+          <a href="posts/antenna-design-fundamentals.html" target="_blank" class="post-card"
+             data-tags="Satellite Comms,RF Engineering" data-month="2025-12">
+            <div class="post-card__header">
+              <span class="post-card__title">Antenna Design Fundamentals for Satellite Links</span>
+              <span class="post-card__date">Dec 5, 2025</span>
+            </div>
+            <p class="post-card__excerpt">Understanding gain, beam-width, polarisation, and radiation patterns — and why your ground-station dish matters as much as the spacecraft antenna.</p>
+            <div class="post-card__tags">
+              <span class="tag">Satellite Comms</span>
+              <span class="tag">RF Engineering</span>
+            </div>
+          </a>
+        </div>
+
+        <p class="no-results" id="no-results">No posts match the current filters.</p>
+      </div>
+
+      <!-- Filter sidebar -->
+      <aside class="posts-sidebar fade-in fade-in-delay-2">
+        <div class="filter-section">
+          <p class="filter-section__title">Filter by Tag</p>
+          <div class="filter-tags" id="filter-tags">
+            <!-- populated by posts.js -->
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <p class="filter-section__title">Filter by Month</p>
+          <div class="filter-months" id="filter-months">
+            <!-- populated by posts.js -->
+          </div>
+        </div>
+
+        <button class="filter-clear" id="filter-clear" style="display:none">✕ Clear all filters</button>
+      </aside>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Paul X. Built with care.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/posts.js"></script>
+</body>
+</html>

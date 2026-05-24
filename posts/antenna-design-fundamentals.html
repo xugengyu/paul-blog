@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antenna Design Fundamentals for Satellite Links — Paul X</title>
+  <meta name="description" content="Understanding gain, beam-width, polarisation, and radiation patterns for satellite communication antennas.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav"><div class="nav__inner">
+    <a href="../index.html" class="nav__logo">paul x</a>
+    <div class="nav__menu" id="nav-menu"><ul class="nav__links">
+      <li><a href="../index.html" class="nav__link">About</a></li>
+      <li><a href="../posts.html" class="nav__link nav__link--active">Posts</a></li>
+      <li><a href="../notes.html" class="nav__link">Notes</a></li>
+      <li><a href="../contact.html" class="nav__link">Contact</a></li>
+      <li><button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></li>
+    </ul></div>
+  </div></nav>
+
+  <main class="post-detail">
+    <div class="container">
+      <a href="../posts.html" class="post-detail__back">← Back to posts</a>
+      <p class="post-detail__meta">December 5, 2025 · 7 min read</p>
+      <h1 class="post-detail__title">Antenna Design Fundamentals for Satellite Links</h1>
+      <div class="post-detail__tags">
+        <span class="tag">Satellite Comms</span>
+        <span class="tag">RF Engineering</span>
+      </div>
+
+      <article class="post-detail__body">
+        <p>The antenna is both the first and last element in any satellite link. On the spacecraft it radiates power toward Earth; on the ground it collects vanishingly small power densities and funnels them into the receiver. Understanding antenna fundamentals is essential for any satellite engineer.</p>
+
+        <h2>Gain and beam-width</h2>
+        <p>Antenna gain measures how effectively an antenna concentrates energy in a particular direction compared to an ideal isotropic radiator. For a circular aperture antenna (like a parabolic dish):</p>
+        <pre><code>G = η × (π × D / λ)²</code></pre>
+        <p>where η is aperture efficiency (typically 0.55–0.70), D is diameter, and λ is wavelength. The half-power beam-width is approximately:</p>
+        <pre><code>θ₃dB ≈ 70 × λ / D   (degrees)</code></pre>
+        <p>A 2.4 m dish at Ku-band (12 GHz) yields about 45 dBi gain with a 0.7° beam-width — tight enough that pointing accuracy becomes critical.</p>
+
+        <h2>Polarisation</h2>
+        <p>Satellite links use either linear (horizontal/vertical) or circular (RHCP/LHCP) polarisation. Circular polarisation is preferred for mobile and LEO links because it's immune to Faraday rotation in the ionosphere and doesn't require the terminal to maintain rotational alignment.</p>
+        <p>Cross-polarisation discrimination (XPD) typically needs to exceed 25 dB to enable frequency reuse through orthogonal polarisations — effectively doubling the available spectrum.</p>
+
+        <h2>Antenna types in satellite systems</h2>
+        <ul>
+          <li><strong>Parabolic reflector</strong> — the workhorse for ground stations. Simple, high gain, mechanically steered. Diameters from 0.45 m (consumer DTH) to 13 m+ (teleport gateways).</li>
+          <li><strong>Horn antenna</strong> — used as feeds for reflectors and directly on spacecraft for global-beam coverage. Moderate gain, wide bandwidth.</li>
+          <li><strong>Patch / microstrip array</strong> — lightweight, conformal, suitable for flat-panel terminals. Used extensively in LEO constellation user terminals.</li>
+          <li><strong>Phased array</strong> — electronically steered beam with no moving parts. Essential for LEO tracking terminals and multi-beam spacecraft. Can form multiple simultaneous beams.</li>
+          <li><strong>Helix antenna</strong> — naturally produces circular polarisation. Common in UHF/L-band satellite handsets and IoT devices.</li>
+        </ul>
+
+        <h2>The ground station matters</h2>
+        <p>It's tempting to focus on the spacecraft antenna, but in many systems the ground station G/T ratio is the link bottleneck. Upgrading a ground station dish from 1.2 m to 2.4 m doubles the diameter and quadruples the effective area — adding 6 dB to G/T. That's 6 dB more link margin without touching the satellite.</p>
+
+        <blockquote>In satellite comms, the cheapest dB is almost always on the ground.</blockquote>
+
+        <h2>Practical considerations</h2>
+        <ul>
+          <li>Wind loading — large dishes need robust pedestals and radomes in exposed locations</li>
+          <li>Surface accuracy — dish surface errors should be ≤ λ/16 to maintain rated gain</li>
+          <li>Feed horn design — illumination taper, phase centre position, and spillover loss all affect system G/T</li>
+          <li>Near-field interactions — at large apertures, ensure no obstructions within the Fresnel zone</li>
+        </ul>
+
+        <p>A well-designed antenna is an elegant piece of applied electromagnetics. Whether it's a 60 cm consumer dish or a 500-element phased array, the physics is the same — only the engineering changes.</p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer"><p class="footer__text">© 2026 Paul X</p></footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

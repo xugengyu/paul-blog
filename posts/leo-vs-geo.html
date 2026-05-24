@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LEO vs GEO: Choosing the Right Orbit — Paul X</title>
+  <meta name="description" content="Comparing low-Earth and geostationary orbits for communications payloads — latency, coverage, and constellation trade-offs.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav"><div class="nav__inner">
+    <a href="../index.html" class="nav__logo">paul x</a>
+    <div class="nav__menu" id="nav-menu"><ul class="nav__links">
+      <li><a href="../index.html" class="nav__link">About</a></li>
+      <li><a href="../posts.html" class="nav__link nav__link--active">Posts</a></li>
+      <li><a href="../notes.html" class="nav__link">Notes</a></li>
+      <li><a href="../contact.html" class="nav__link">Contact</a></li>
+      <li><button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></li>
+    </ul></div>
+  </div></nav>
+
+  <main class="post-detail">
+    <div class="container">
+      <a href="../posts.html" class="post-detail__back">← Back to posts</a>
+      <p class="post-detail__meta">March 22, 2026 · 6 min read</p>
+      <h1 class="post-detail__title">LEO vs GEO: Choosing the Right Orbit</h1>
+      <div class="post-detail__tags">
+        <span class="tag">Satellite Comms</span>
+        <span class="tag">Orbital Mechanics</span>
+      </div>
+
+      <article class="post-detail__body">
+        <p>The choice between low-Earth orbit and geostationary orbit is the first — and arguably the most consequential — decision in any satellite communications mission. It shapes every downstream design choice from antenna aperture to ground-network topology.</p>
+
+        <h2>The latency divide</h2>
+        <p>Light takes about 120 ms to make a one-way trip to GEO (35 786 km altitude), yielding a round-trip time of ~240 ms before any processing delay. LEO satellites at 550 km altitude offer a one-way propagation delay under 4 ms — making real-time applications like VoIP and gaming dramatically more responsive.</p>
+
+        <h2>Path loss advantage</h2>
+        <p>Free-space path loss scales with distance squared. Moving from GEO to 550 km LEO cuts the range by a factor of ~65, reducing FSPL by about 36 dB. This enormous gain lets LEO spacecraft use much smaller antennas and lower transmit power — which in turn enables smaller, cheaper satellites.</p>
+
+        <h2>Coverage and constellations</h2>
+        <p>A single GEO satellite covers roughly a third of the Earth's surface (excluding the poles). Three GEO satellites can provide near-global coverage with zero handovers. LEO coverage is fundamentally different:</p>
+        <ul>
+          <li>Each LEO satellite's footprint is small — roughly 1 000 km diameter at 550 km altitude</li>
+          <li>Continuous coverage requires hundreds to thousands of satellites in coordinated orbital planes</li>
+          <li>Inter-satellite links (ISLs) or dense ground-station networks are needed to backhaul traffic</li>
+          <li>Handovers occur every 5–10 minutes as satellites fly overhead</li>
+        </ul>
+
+        <h2>Comparison table</h2>
+        <p>Here's a high-level summary of the key trade-offs:</p>
+        <pre><code>Parameter         GEO           LEO (550 km)
+─────────────────────────────────────────────
+Altitude          35 786 km     550 km
+RTT latency       ~240 ms       ~8 ms
+FSPL (Ka-band)    ~213 dB       ~177 dB
+Coverage / sat    ~1/3 Earth    ~1 000 km Ø
+Satellites needed 3–5           500–4 000+
+Handovers         None          Every 5–10 min
+Tracking needed   Fixed dish    Phased array
+Lifetime          15+ years     5–7 years</code></pre>
+
+        <h2>When to choose what</h2>
+        <p><strong>GEO</strong> remains the right choice for broadcast services (DTH TV), maritime/aviation VSAT, and regions where ground infrastructure is sparse. The simplicity of a fixed-pointing dish and a single always-visible satellite is hard to beat.</p>
+        <p><strong>LEO</strong> excels at latency-sensitive broadband, IoT connectivity, Earth observation relay, and applications where small, cheap terminals (flat-panel phased arrays) are feasible.</p>
+        <p>In reality the industry is converging on multi-orbit architectures — LEO constellations for broadband with GEO overlay for resilience — combining the best of both worlds.</p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer"><p class="footer__text">© 2026 Paul X</p></footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

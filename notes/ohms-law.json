@@ -1,0 +1,6 @@
+{
+  "id": "ohms-law",
+  "title": "Ohm's Law",
+  "category": "Fundamentals",
+  "content": "<p>The cornerstone of circuit analysis: <code>V = I × R</code>. Voltage across a resistor equals the current through it multiplied by its resistance.</p><p>In AC circuits this generalises to <code>V = I × Z</code>, where Z is complex impedance. Ohm's Law is the starting point for virtually every RF and power calculation you'll ever do.</p>"
+}
