@@ -75,6 +75,7 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  overflow-y: auto;
 }
 
 .sidebar-title {
@@ -202,6 +203,7 @@ html, body {
   white-space: nowrap;
   text-align: center;
   font-size: 10px;
+  line-height: 1.1;
   color: var(--text-secondary);
   pointer-events: none;
   padding-top: 4px;

@@ -23,7 +23,8 @@ const Workspace = {
   displayOptions: {
     showBlockParams: true,
     showCascadedParams: true,
-    showFrequency: true
+    showFrequency: true,
+    showLogs: true
   },
   
   dragState: null,
@@ -286,14 +287,22 @@ const Workspace = {
       this.displayOptions = {
         showBlockParams: data.displayOptions.showBlockParams !== undefined ? data.displayOptions.showBlockParams : true,
         showCascadedParams: data.displayOptions.showCascadedParams !== undefined ? data.displayOptions.showCascadedParams : true,
-        showFrequency: data.displayOptions.showFrequency !== undefined ? data.displayOptions.showFrequency : true
+        showFrequency: data.displayOptions.showFrequency !== undefined ? data.displayOptions.showFrequency : true,
+        showLogs: data.displayOptions.showLogs !== undefined ? data.displayOptions.showLogs : true
       };
       const chkBlock = document.getElementById('chk-show-block-params');
       const chkCasc = document.getElementById('chk-show-cascaded-params');
       const chkFreq = document.getElementById('chk-show-frequency');
+      const chkLogs = document.getElementById('chk-show-logs');
       if (chkBlock) chkBlock.checked = this.displayOptions.showBlockParams;
       if (chkCasc) chkCasc.checked = this.displayOptions.showCascadedParams;
       if (chkFreq) chkFreq.checked = this.displayOptions.showFrequency;
+      if (chkLogs) chkLogs.checked = this.displayOptions.showLogs;
+      
+      const resultsSec = document.getElementById('results-section');
+      if (resultsSec) {
+        resultsSec.style.display = this.displayOptions.showLogs ? 'block' : 'none';
+      }
     }
     
     // 1. Recreate blocks

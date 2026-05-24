@@ -79,19 +79,28 @@ const App = {
     const chkBlock = document.getElementById('chk-show-block-params');
     const chkCasc = document.getElementById('chk-show-cascaded-params');
     const chkFreq = document.getElementById('chk-show-frequency');
+    const chkLogs = document.getElementById('chk-show-logs');
 
     const updateOptions = () => {
       window.Workspace.displayOptions = {
         showBlockParams: chkBlock ? chkBlock.checked : true,
         showCascadedParams: chkCasc ? chkCasc.checked : true,
-        showFrequency: chkFreq ? chkFreq.checked : true
+        showFrequency: chkFreq ? chkFreq.checked : true,
+        showLogs: chkLogs ? chkLogs.checked : true
       };
+      
+      const resultsSec = document.getElementById('results-section');
+      if (resultsSec) {
+        resultsSec.style.display = window.Workspace.displayOptions.showLogs ? 'block' : 'none';
+      }
+      
       window.Workspace.blocks.forEach(b => b.updateParamDisplay());
     };
 
     if (chkBlock) chkBlock.addEventListener('change', updateOptions);
     if (chkCasc) chkCasc.addEventListener('change', updateOptions);
     if (chkFreq) chkFreq.addEventListener('change', updateOptions);
+    if (chkLogs) chkLogs.addEventListener('change', updateOptions);
     
     // Context Menu Items
     document.getElementById('menu-edit').addEventListener('click', () => {
