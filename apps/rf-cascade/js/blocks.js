@@ -115,27 +115,27 @@ class Block {
     if (opts.showBlockParams) {
       Object.entries(this.params).forEach(([key, val]) => {
         const cleanKey = key.replace(/_/g, ' ');
-        lines.push(`${cleanKey}: ${val}`);
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--block-val">${cleanKey}: ${val}</span>`);
       });
     }
 
     if (opts.showCascadedParams) {
       if (this.calculatedPIn !== undefined) {
-        lines.push(`Cascaded Pin: ${this.calculatedPIn.toFixed(2)} dBm`);
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded Pin: ${this.calculatedPIn.toFixed(2)} dBm</span>`);
       }
       if (this.calculatedPOut !== undefined) {
-        lines.push(`Cascaded Pout: ${this.calculatedPOut.toFixed(2)} dBm`);
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded Pout: ${this.calculatedPOut.toFixed(2)} dBm</span>`);
       }
       if (this.calculatedNF !== undefined) {
-        lines.push(`Cascaded NF: ${this.calculatedNF.toFixed(2)} dB`);
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded NF: ${this.calculatedNF.toFixed(2)} dB</span>`);
       }
       if (this.calculatedOIP3 !== undefined && !isNaN(this.calculatedOIP3)) {
         const oip3Str = isFinite(this.calculatedOIP3) ? this.calculatedOIP3.toFixed(2) + ' dBm' : 'inf';
-        lines.push(`Cascaded OIP3: ${oip3Str}`);
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded OIP3: ${oip3Str}</span>`);
       }
       if (this.calculatedIIP3 !== undefined && !isNaN(this.calculatedIIP3)) {
         const iip3Str = isFinite(this.calculatedIIP3) ? this.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
-        lines.push(`Cascaded IIP3: ${iip3Str}`);
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--cascading-val">Cascaded IIP3: ${iip3Str}</span>`);
       }
     }
 
@@ -144,7 +144,7 @@ class Block {
         const freqStr = this.calculatedFrequencies.length > 3 
           ? `${this.calculatedFrequencies.slice(0, 3).join(', ')}...`
           : this.calculatedFrequencies.join(', ');
-        lines.push(`Freq: ${freqStr} MHz`);
+        lines.push(`<span class="rf-block__param-item rf-block__param-item--frequency-val">Freq: ${freqStr} MHz</span>`);
       }
     }
 

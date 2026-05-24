@@ -207,6 +207,32 @@ html, body {
   padding-top: 4px;
 }
 
+.rf-block__param-item {
+  display: block;
+}
+
+.rf-block__param-item--block-val {
+  color: var(--text-secondary);
+}
+
+.rf-block__param-item--cascading-val {
+  color: #2980b9; /* Distinct slate blue for light mode cascaded calculations */
+  font-weight: 500;
+}
+
+[data-theme="dark"] .rf-block__param-item--cascading-val {
+  color: #5cc4b4; /* Muted teal accent for dark mode */
+}
+
+.rf-block__param-item--frequency-val {
+  color: #d35400; /* Warm dark amber/orange for light mode frequencies */
+  font-weight: 500;
+}
+
+[data-theme="dark"] .rf-block__param-item--frequency-val {
+  color: #e67e22; /* Vibrant orange for dark mode */
+}
+
 .resize-handle {
   position: absolute;
   bottom: 0;
