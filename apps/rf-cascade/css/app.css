@@ -313,7 +313,7 @@ html, body {
   font-size: var(--text-sm);
   font-weight: 500;
 }
-.form-group input {
+.form-group > input {
   padding: 8px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -326,3 +326,66 @@ html, body {
 }
 #btn-calculate, #modal-save { background-color: #2ecc71; color: white; border-color: #27ae60; }
 #btn-calculate:hover, #modal-save:hover { background-color: #27ae60; }
+
+/* Custom Parameter Spinner Controls */
+.param-input-wrapper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.param-input-wrapper input {
+  border: none !important;
+  outline: none !important;
+  flex: 1;
+  padding: 8px;
+  min-width: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-sm);
+}
+
+/* Hide default Chrome, Safari, Edge, Opera number spinners */
+.param-input-wrapper input[type="number"]::-webkit-outer-spin-button,
+.param-input-wrapper input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide default Firefox number spinners */
+.param-input-wrapper input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.param-spin-buttons {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-color);
+  width: 24px;
+}
+
+.spin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  border: none;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  font-size: 8px;
+  color: var(--text-secondary);
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.spin-btn:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+
+.spin-btn--up {
+  border-bottom: 1px solid var(--border-color);
+}

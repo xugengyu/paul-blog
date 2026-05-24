@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choosing the Right Antenna: A Summary of TI's SWRA161B Application Note — Random Thoughts of a Random Guy</title>
+  <meta name="description" content="A deep dive into Texas Instruments' SWRA161B (AN058) guide, comparing PCB trace, chip, and whip antennas for short-range wireless designs.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <main class="post-detail">
+    <div class="container">
+      <a href="../posts.html" class="post-detail__back">← Back to posts</a>
+      <p class="post-detail__meta">May 23, 2026 · 5 min read</p>
+      <h1 class="post-detail__title">Choosing the Right Antenna: A Summary of TI's SWRA161B Application Note</h1>
+      <div class="post-detail__tags">
+        <a href="../posts.html?tag=RF%20Engineering" class="tag">RF Engineering</a>
+        <a href="../posts.html?tag=Antenna%20Design" class="tag">Antenna Design</a>
+        <a href="../posts.html?tag=Tutorial" class="tag">Tutorial</a>
+      </div>
+
+      <article class="post-detail__body">
+<p>Designing a short-range wireless device presents engineers with a classic multidimensional optimization problem: how to balance <strong>cost</strong>, <strong>size</strong>, and <strong>performance</strong> when selecting and integrating an antenna. </p>
+<p>Texas Instruments’ application note <strong>SWRA161B</strong> (historically referred to as <strong>AN058</strong>), titled <em>&quot;Antenna Selection Guide,&quot;</em> serves as an essential primer for navigating these trade-offs. This post summarizes the key parameters, antenna comparisons, and practical design recommendations outlined in the guide.</p>
+<hr>
+<h2>1. Core Antenna Parameters &amp; Metrics</h2>
+<p>Before selecting a form factor, it is critical to understand the primary metrics used to characterize antenna performance:</p>
+<ul>
+<li><strong>Impedance Matching:</strong> Most short-range RF ICs and transmission lines are designed for a 50 Ω characteristic impedance. Impedance mismatches at the antenna feed point cause RF energy to reflect back to the source rather than radiate.</li>
+<li><strong>VSWR &amp; Return Loss:</strong> The Voltage Standing Wave Ratio (VSWR) and Return Loss measure how well the antenna is matched. The application note defines the <strong>usable bandwidth</strong> of an antenna as the frequency range where <strong>VSWR ≤ 2.0</strong> (which corresponds to a <strong>Return Loss ≥ 9.5 dB</strong>). At this threshold, approximately 10% or less of the incident power is reflected.</li>
+<li><strong>Radiation Pattern &amp; Gain:</strong> The radiation pattern describes how an antenna distributes energy in 3D space. While isotropic radiators distribute energy equally in all directions (0 dBi), practical antennas focus energy in specific directions, yielding gain.</li>
+</ul>
+<hr>
+<h2>2. Comparing Antenna Types</h2>
+<p>SWRA161B classifies antennas for short-range devices into three major categories: <strong>PCB Trace Antennas</strong>, <strong>Ceramic Chip Antennas</strong>, and <strong>External Whip Antennas</strong>.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Antenna Type</th>
+<th align="left">Unit Cost</th>
+<th align="left">Physical Size</th>
+<th align="left">Performance</th>
+<th align="left">Primary Pros</th>
+<th align="left">Primary Cons</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>PCB Trace (IFA/MIFA)</strong></td>
+<td align="left">Lowest ($0.00)</td>
+<td align="left">Large to Medium</td>
+<td align="left">Good</td>
+<td align="left">No BOM cost; high repeatability in fabrication.</td>
+<td align="left">Requires significant PCB real estate; hard to design/simulate.</td>
+</tr>
+<tr>
+<td align="left"><strong>Ceramic Chip</strong></td>
+<td align="left">Medium ($0.10 - $1.00)</td>
+<td align="left">Smallest</td>
+<td align="left">Medium to Good</td>
+<td align="left">Extremely compact; easy off-the-shelf placement.</td>
+<td align="left">Higher BOM cost; narrower bandwidth; high sensitivity to nearby components.</td>
+</tr>
+<tr>
+<td align="left"><strong>External Whip</strong></td>
+<td align="left">Highest</td>
+<td align="left">Largest</td>
+<td align="left">Excellent</td>
+<td align="left">Maximum range; omnidirectional; independent of board size.</td>
+<td align="left">Expensive; requires an RF connector (e.g., SMA/U.FL); bulky.</td>
+</tr>
+</tbody></table>
+<h3>PCB Trace Antennas: IFA vs. MIFA</h3>
+<p>PCB trace antennas are etched directly onto the circuit board copper layer.</p>
+<ul>
+<li><strong>Inverted-F Antenna (IFA):</strong> Typically has high efficiency and wider bandwidth, making it very forgiving to tune. However, it requires a larger layout area.</li>
+<li><strong>Meandered Inverted-F Antenna (MIFA):</strong> By folding the radiating element into a serpentine pattern, the physical length is compacted. MIFAs are widely used in space-constrained 2.4 GHz designs like USB dongles, wireless mice, and wearable devices, though they have narrower bandwidth.</li>
+</ul>
+<h3>Ceramic Chip Antennas</h3>
+<p>Chip antennas are tiny, surface-mount components that contain high-permittivity dielectric materials to artificially reduce the wavelength inside the component. They are the go-to solution for miniaturized electronics, particularly at frequencies below 1 GHz where a PCB trace antenna would occupy the entire board.</p>
+<h3>Whip Antennas</h3>
+<p>A whip antenna is an external wire monopole. Because it is physically separated from the PCB ground plane and stands out in free space, it offers the best radiation efficiency and range. However, it requires a connector, a cable/assembly, and mechanical mounting, driving up material and assembly costs.</p>
+<hr>
+<h2>3. Practical Layout &amp; Integration Rules</h2>
+<p>The guide highlights that an antenna is not a self-contained component; it is a system that interacts dynamically with its physical surroundings.</p>
+<h3>The Ground Plane is Part of the Antenna</h3>
+<p>For monopole-type antennas (including IFA, MIFA, and chip antennas), the PCB ground plane acts as the second half of the dipole (the &quot;counterpoise&quot;). </p>
+<ul>
+<li><strong>Ground Plane Size:</strong> The length and width of the ground plane directly affect the radiation pattern, resonant frequency, and impedance of the antenna. </li>
+<li><strong>Enclosure Effects:</strong> Plastic housings, batteries, and metallic enclosures near the radiating element will shift the resonance down in frequency due to their higher dielectric constant compared to air.</li>
+</ul>
+<h3>Keep the Clearance Area Clean</h3>
+<p>Antennas require a &quot;clearance area&quot;—a dedicated region on all layers of the PCB where no copper traces, ground planes, components, or mounting screws are present. Placing metal within this near-field zone will severely detune the antenna and absorb radiated energy.</p>
+<h3>Always Implement a π-Matching Network</h3>
+<p>Even if an antenna is advertised as &quot;50 Ω matched,&quot; the specific dielectric of your PCB stackup, trace widths, and enclosure will shift its impedance. </p>
+<p>TI strongly recommends placing a <strong>π-matching network</strong> (consisting of two shunt components and one series component) as close to the antenna feed point as possible. This allows you to tune the network using a vector network analyzer (VNA) post-manufacturing without revising the PCB layout.</p>
+<hr>
+<h2>4. Summary Checklist for Designers</h2>
+<ol>
+<li><strong>Select the type</strong> based on budget and space: use a PCB trace antenna (MIFA/IFA) if space permits to save BOM costs; opt for a chip antenna if space is extremely tight; use a whip antenna if max range is the overriding requirement.</li>
+<li><strong>Copy reference layouts exactly:</strong> Do not alter the width, length, or clearance dimensions of TI’s reference designs (e.g., DN007 or AN043) unless you have the simulation tools to re-characterize them.</li>
+<li><strong>Ensure a solid ground plane</strong> is connected back to the antenna ground feed point.</li>
+<li><strong>Allocate space for the matching network</strong> close to the feed point to ensure you can tune out parasitic effects from the enclosure.</li>
+</ol>
+
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Random Thoughts of a Random Guy. Built with care.</p>
+  </footer>
+  <script src="../js/nav.js?v=3"></script>
+  <script src="../js/main.js?v=3"></script>
+</body>
+</html>

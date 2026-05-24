@@ -99,14 +99,63 @@ const App = {
       const label = document.createElement('label');
       label.textContent = key.replace(/_/g, ' ');
       
+      const val = block.params[key];
+      const isNum = typeof val === 'number';
+      
+      const inputWrapper = document.createElement('div');
+      inputWrapper.className = 'param-input-wrapper';
+      
       const input = document.createElement('input');
-      input.type = 'number';
-      input.step = 'any';
+      input.type = isNum ? 'number' : 'text';
+      if (isNum) {
+        input.step = 'any';
+      }
       input.dataset.key = key;
-      input.value = block.params[key];
+      input.value = val;
+      
+      inputWrapper.appendChild(input);
+      
+      if (isNum) {
+        const spinButtons = document.createElement('div');
+        spinButtons.className = 'param-spin-buttons';
+        
+        const btnUp = document.createElement('button');
+        btnUp.type = 'button';
+        btnUp.className = 'spin-btn spin-btn--up';
+        btnUp.innerHTML = '▲';
+        
+        const btnDown = document.createElement('button');
+        btnDown.type = 'button';
+        btnDown.className = 'spin-btn spin-btn--down';
+        btnDown.innerHTML = '▼';
+        
+        const isInteger = key === 'Number_of_Outputs' || key === 'Number_of_Inputs';
+        const stepVal = isInteger ? 1 : 0.5;
+        
+        btnUp.addEventListener('click', () => {
+          let curr = parseFloat(input.value);
+          if (isNaN(curr)) curr = 0;
+          curr = curr + stepVal;
+          input.value = isInteger ? Math.round(curr) : parseFloat(curr.toFixed(2));
+        });
+        
+        btnDown.addEventListener('click', () => {
+          let curr = parseFloat(input.value);
+          if (isNaN(curr)) curr = 0;
+          curr = curr - stepVal;
+          if (isInteger) {
+            curr = Math.max(1, Math.round(curr));
+          }
+          input.value = isInteger ? curr : parseFloat(curr.toFixed(2));
+        });
+        
+        spinButtons.appendChild(btnUp);
+        spinButtons.appendChild(btnDown);
+        inputWrapper.appendChild(spinButtons);
+      }
       
       group.appendChild(label);
-      group.appendChild(input);
+      group.appendChild(inputWrapper);
       body.appendChild(group);
     });
     
@@ -117,9 +166,13 @@ const App = {
     const inputs = document.querySelectorAll('#modal-body input');
     inputs.forEach(input => {
       const key = input.dataset.key;
-      const val = parseFloat(input.value);
-      if (!isNaN(val)) {
-        this.activeBlock.params[key] = val;
+      if (input.type === 'number') {
+        const val = parseFloat(input.value);
+        if (!isNaN(val)) {
+          this.activeBlock.params[key] = val;
+        }
+      } else {
+        this.activeBlock.params[key] = input.value;
       }
     });
     this.activeBlock.updateParamDisplay();
