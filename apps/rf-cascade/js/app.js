@@ -74,6 +74,24 @@ const App = {
     document.getElementById('btn-calculate').addEventListener('click', () => {
       this.calculateCascade();
     });
+
+    // Display Options Checkboxes
+    const chkBlock = document.getElementById('chk-show-block-params');
+    const chkCasc = document.getElementById('chk-show-cascaded-params');
+    const chkFreq = document.getElementById('chk-show-frequency');
+
+    const updateOptions = () => {
+      window.Workspace.displayOptions = {
+        showBlockParams: chkBlock ? chkBlock.checked : true,
+        showCascadedParams: chkCasc ? chkCasc.checked : true,
+        showFrequency: chkFreq ? chkFreq.checked : true
+      };
+      window.Workspace.blocks.forEach(b => b.updateParamDisplay());
+    };
+
+    if (chkBlock) chkBlock.addEventListener('change', updateOptions);
+    if (chkCasc) chkCasc.addEventListener('change', updateOptions);
+    if (chkFreq) chkFreq.addEventListener('change', updateOptions);
     
     // Context Menu Items
     document.getElementById('menu-edit').addEventListener('click', () => {

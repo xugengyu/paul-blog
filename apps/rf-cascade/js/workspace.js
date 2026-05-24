@@ -20,6 +20,11 @@ const Workspace = {
   container: null,
   svgLayer: null,
   gridSize: 20,
+  displayOptions: {
+    showBlockParams: true,
+    showCascadedParams: true,
+    showFrequency: true
+  },
   
   dragState: null,
   tempWire: null,
@@ -243,6 +248,7 @@ const Workspace = {
 
   exportWorkspace() {
     const data = {
+      displayOptions: this.displayOptions,
       blocks: this.blocks.map(b => ({
         id: b.id,
         type: b.type,
@@ -275,6 +281,20 @@ const Workspace = {
     if (!data || !Array.isArray(data.blocks)) return;
     
     this.clear();
+    
+    if (data.displayOptions) {
+      this.displayOptions = {
+        showBlockParams: data.displayOptions.showBlockParams !== undefined ? data.displayOptions.showBlockParams : true,
+        showCascadedParams: data.displayOptions.showCascadedParams !== undefined ? data.displayOptions.showCascadedParams : true,
+        showFrequency: data.displayOptions.showFrequency !== undefined ? data.displayOptions.showFrequency : true
+      };
+      const chkBlock = document.getElementById('chk-show-block-params');
+      const chkCasc = document.getElementById('chk-show-cascaded-params');
+      const chkFreq = document.getElementById('chk-show-frequency');
+      if (chkBlock) chkBlock.checked = this.displayOptions.showBlockParams;
+      if (chkCasc) chkCasc.checked = this.displayOptions.showCascadedParams;
+      if (chkFreq) chkFreq.checked = this.displayOptions.showFrequency;
+    }
     
     // 1. Recreate blocks
     data.blocks.forEach(b => {

@@ -104,33 +104,48 @@ class Block {
 
   updateParamDisplay() {
     if (!this.paramDisplay) return;
-    const lines = Object.entries(this.params).map(([key, val]) => {
-      const cleanKey = key.replace(/_/g, ' ');
-      return `${cleanKey}: ${val}`;
-    });
+    const lines = [];
 
-    if (this.calculatedPIn !== undefined) {
-      lines.push(`Pin: ${this.calculatedPIn.toFixed(2)} dBm`);
+    const opts = (window.Workspace && window.Workspace.displayOptions) || {
+      showBlockParams: true,
+      showCascadedParams: true,
+      showFrequency: true
+    };
+
+    if (opts.showBlockParams) {
+      Object.entries(this.params).forEach(([key, val]) => {
+        const cleanKey = key.replace(/_/g, ' ');
+        lines.push(`${cleanKey}: ${val}`);
+      });
     }
-    if (this.calculatedPOut !== undefined) {
-      lines.push(`Pout: ${this.calculatedPOut.toFixed(2)} dBm`);
+
+    if (opts.showCascadedParams) {
+      if (this.calculatedPIn !== undefined) {
+        lines.push(`Cascaded Pin: ${this.calculatedPIn.toFixed(2)} dBm`);
+      }
+      if (this.calculatedPOut !== undefined) {
+        lines.push(`Cascaded Pout: ${this.calculatedPOut.toFixed(2)} dBm`);
+      }
+      if (this.calculatedNF !== undefined) {
+        lines.push(`Cascaded NF: ${this.calculatedNF.toFixed(2)} dB`);
+      }
+      if (this.calculatedOIP3 !== undefined && !isNaN(this.calculatedOIP3)) {
+        const oip3Str = isFinite(this.calculatedOIP3) ? this.calculatedOIP3.toFixed(2) + ' dBm' : 'inf';
+        lines.push(`Cascaded OIP3: ${oip3Str}`);
+      }
+      if (this.calculatedIIP3 !== undefined && !isNaN(this.calculatedIIP3)) {
+        const iip3Str = isFinite(this.calculatedIIP3) ? this.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
+        lines.push(`Cascaded IIP3: ${iip3Str}`);
+      }
     }
-    if (this.calculatedNF !== undefined) {
-      lines.push(`NF: ${this.calculatedNF.toFixed(2)} dB`);
-    }
-    if (this.calculatedOIP3 !== undefined && !isNaN(this.calculatedOIP3)) {
-      const oip3Str = isFinite(this.calculatedOIP3) ? this.calculatedOIP3.toFixed(2) + ' dBm' : 'inf';
-      lines.push(`OIP3: ${oip3Str}`);
-    }
-    if (this.calculatedIIP3 !== undefined && !isNaN(this.calculatedIIP3)) {
-      const iip3Str = isFinite(this.calculatedIIP3) ? this.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
-      lines.push(`IIP3: ${iip3Str}`);
-    }
-    if (this.calculatedFrequencies !== undefined && this.calculatedFrequencies.length > 0) {
-      const freqStr = this.calculatedFrequencies.length > 3 
-        ? `${this.calculatedFrequencies.slice(0, 3).join(', ')}...`
-        : this.calculatedFrequencies.join(', ');
-      lines.push(`Freq: ${freqStr} MHz`);
+
+    if (opts.showFrequency) {
+      if (this.calculatedFrequencies !== undefined && this.calculatedFrequencies.length > 0) {
+        const freqStr = this.calculatedFrequencies.length > 3 
+          ? `${this.calculatedFrequencies.slice(0, 3).join(', ')}...`
+          : this.calculatedFrequencies.join(', ');
+        lines.push(`Freq: ${freqStr} MHz`);
+      }
     }
 
     this.paramDisplay.innerHTML = lines.join('<br>');
