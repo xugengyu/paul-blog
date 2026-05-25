@@ -84,9 +84,11 @@ const data = {
       "y": 160,
       "name": "Air",
       "params": {
-        "Tx_Gain_dBi": 5,
-        "Path_Loss_dB": 80,
-        "Rx_Gain_dBi": 5
+        "Distance_m": 10000,
+        "Tx_Gain_Freqs_MHz": "2400",
+        "Tx_Gain_dBi": "5",
+        "Rx_Gain_Freqs_MHz": "2400",
+        "Rx_Gain_dBi": "5"
       }
     },
 

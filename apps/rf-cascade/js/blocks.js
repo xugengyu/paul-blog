@@ -494,9 +494,11 @@ class SignalSource extends Block {
 class FreeSpaceLink extends Block {
   setupParams() {
     this.params = {
-      Tx_Gain_dBi: 10,
-      Path_Loss_dB: 100,
-      Rx_Gain_dBi: 10
+      Distance_m: 1000,
+      Tx_Gain_Freqs_MHz: "2400",
+      Tx_Gain_dBi: "0",
+      Rx_Gain_Freqs_MHz: "2400",
+      Rx_Gain_dBi: "0"
     };
   }
   setupPorts() {

@@ -821,6 +821,64 @@ const App = {
         outSpectrum = Array.from(mixedMap.entries()).map(([freq, mw]) => ({ freq, power_dBm: 10 * Math.log10(mw) }));
         nextBlockGain = convGain;
         nextBlockNF = block.params.NF_dB !== undefined ? block.params.NF_dB : 6.0;
+      } else if (block.type === 'FreeSpaceLink') {
+        let distance = block.params.Distance_m !== undefined ? block.params.Distance_m : 1000;
+        let txFreqs = String(block.params.Tx_Gain_Freqs_MHz || "2400").split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+        let txGains = String(block.params.Tx_Gain_dBi || "0").split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+        let rxFreqs = String(block.params.Rx_Gain_Freqs_MHz || "2400").split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+        let rxGains = String(block.params.Rx_Gain_dBi || "0").split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+        
+        // Helper to interpolate gain
+        const getGain = (f, freqs, gains) => {
+          if (freqs.length === 0 || gains.length === 0) return 0;
+          if (freqs.length === 1 || gains.length === 1) return gains[0];
+          
+          // Clamp to edges
+          if (f <= freqs[0]) return gains[0];
+          if (f >= freqs[freqs.length - 1]) return gains[Math.min(gains.length - 1, freqs.length - 1)];
+          
+          // Find the interval
+          for (let i = 0; i < freqs.length - 1; i++) {
+            if (f >= freqs[i] && f <= freqs[i+1]) {
+              let g1 = gains[i] !== undefined ? gains[i] : gains[gains.length - 1];
+              let g2 = gains[i+1] !== undefined ? gains[i+1] : gains[gains.length - 1];
+              let t = (f - freqs[i]) / (freqs[i+1] - freqs[i]);
+              return g1 + t * (g2 - g1);
+            }
+          }
+          return gains[gains.length - 1];
+        };
+
+        let totalMwOut = 0;
+        let totalMwIn = 0;
+        
+        outSpectrum.forEach(t => {
+           let lambda = 299792458 / (t.freq * 1e6);
+           let fspl_dB = 20 * Math.log10((4 * Math.PI * distance) / lambda);
+           let tx_gain = getGain(t.freq, txFreqs, txGains);
+           let rx_gain = getGain(t.freq, rxFreqs, rxGains);
+           
+           let loss = fspl_dB - tx_gain - rx_gain;
+           
+           totalMwIn += Math.pow(10, t.power_dBm/10);
+           t.power_dBm -= loss;
+           totalMwOut += Math.pow(10, t.power_dBm/10);
+        });
+        
+        let avgLoss = 0;
+        if (totalMwIn > 0 && totalMwOut > 0) {
+          avgLoss = 10 * Math.log10(totalMwIn) - 10 * Math.log10(totalMwOut);
+        } else if (outSpectrum.length > 0) {
+           let lambda = 299792458 / (outSpectrum[0].freq * 1e6);
+           let fspl_dB = 20 * Math.log10((4 * Math.PI * distance) / lambda);
+           let tx_gain = getGain(outSpectrum[0].freq, txFreqs, txGains);
+           let rx_gain = getGain(outSpectrum[0].freq, rxFreqs, rxGains);
+           avgLoss = fspl_dB - tx_gain - rx_gain;
+        }
+        
+        nextBlockGain = -avgLoss;
+        nextBlockNF = avgLoss;
+        log += `  Avg Path Loss: ${avgLoss.toFixed(2)} dB\n`;
       }
       
       // ---- IM3 Calculation for Non-Linear Blocks ----
