@@ -91,10 +91,25 @@ class Block {
       const inputRow = document.createElement('div');
       inputRow.style.cssText = 'display: flex; gap: 4px; align-items: center;';
 
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.value = currentVal;
-      input.step = 'any';
+      let input;
+      const isTypeSelect = paramKey === 'Type' && this.type === 'Filter';
+
+      if (isTypeSelect) {
+        input = document.createElement('select');
+        ['Lowpass', 'Highpass', 'Bandpass', 'Bandstop'].forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt;
+          option.textContent = opt;
+          input.appendChild(option);
+        });
+        input.value = currentVal || 'Bandpass';
+      } else {
+        input = document.createElement('input');
+        input.type = typeof currentVal === 'number' ? 'number' : 'text';
+        input.value = currentVal;
+        if (input.type === 'number') input.step = 'any';
+      }
+
       input.style.cssText = `
         flex: 1; padding: 5px 7px;
         border: 1px solid var(--border-color, #ccc);
@@ -131,9 +146,11 @@ class Block {
       input.select();
 
       const doSave = () => {
-        const newVal = parseFloat(input.value);
-        if (!isNaN(newVal)) {
-          this.params[paramKey] = newVal;
+        const valStr = input.value;
+        const newVal = parseFloat(valStr);
+        const finalVal = typeof this.params[paramKey] === 'string' ? valStr : (!isNaN(newVal) ? newVal : this.params[paramKey]);
+        if (finalVal !== undefined) {
+          this.params[paramKey] = finalVal;
           this.updateParamDisplay();
           if (window.Workspace) window.Workspace.markStale();
         }
@@ -169,24 +186,30 @@ class Block {
     resizeHandle.className = 'resize-handle';
     this.element.appendChild(resizeHandle);
 
-    // Ports
-    this.inputs.forEach(p => {
+    const renderPort = (p, isInput) => {
       const portEl = document.createElement('div');
-      portEl.className = 'port port--in';
+      portEl.className = 'port ' + (isInput ? 'port--in' : 'port--out');
+      if (p.align === 'top') {
+        portEl.classList.add('port--top');
+        portEl.style.left = (p.offsetX !== undefined ? p.offsetX : 40) + 'px';
+      } else {
+        portEl.style.top = (p.offsetY - 2) + 'px';
+      }
       portEl.dataset.portId = p.id;
       portEl.dataset.blockId = this.id;
-      portEl.style.top = (p.offsetY - 2) + 'px';
-      this.element.appendChild(portEl);
-    });
 
-    this.outputs.forEach(p => {
-      const portEl = document.createElement('div');
-      portEl.className = 'port port--out';
-      portEl.dataset.portId = p.id;
-      portEl.dataset.blockId = this.id;
-      portEl.style.top = (p.offsetY - 2) + 'px';
-      this.element.appendChild(portEl);
-    });
+      if (p.label) {
+        const labelEl = document.createElement('div');
+        labelEl.className = 'port-label';
+        labelEl.textContent = p.label;
+        portEl.appendChild(labelEl);
+      }
+      return portEl;
+    };
+
+    // Ports
+    this.inputs.forEach(p => this.element.appendChild(renderPort(p, true)));
+    this.outputs.forEach(p => this.element.appendChild(renderPort(p, false)));
 
     return this.element;
   }
@@ -198,23 +221,29 @@ class Block {
     const oldPorts = this.element.querySelectorAll('.port');
     oldPorts.forEach(p => p.remove());
 
-    this.inputs.forEach(p => {
+    const renderPort = (p, isInput) => {
       const portEl = document.createElement('div');
-      portEl.className = 'port port--in';
+      portEl.className = 'port ' + (isInput ? 'port--in' : 'port--out');
+      if (p.align === 'top') {
+        portEl.classList.add('port--top');
+        portEl.style.left = (p.offsetX !== undefined ? p.offsetX : 40) + 'px';
+      } else {
+        portEl.style.top = (p.offsetY - 2) + 'px';
+      }
       portEl.dataset.portId = p.id;
       portEl.dataset.blockId = this.id;
-      portEl.style.top = (p.offsetY - 2) + 'px';
-      this.element.appendChild(portEl);
-    });
 
-    this.outputs.forEach(p => {
-      const portEl = document.createElement('div');
-      portEl.className = 'port port--out';
-      portEl.dataset.portId = p.id;
-      portEl.dataset.blockId = this.id;
-      portEl.style.top = (p.offsetY - 2) + 'px';
-      this.element.appendChild(portEl);
-    });
+      if (p.label) {
+        const labelEl = document.createElement('div');
+        labelEl.className = 'port-label';
+        labelEl.textContent = p.label;
+        portEl.appendChild(labelEl);
+      }
+      return portEl;
+    };
+
+    this.inputs.forEach(p => this.element.appendChild(renderPort(p, true)));
+    this.outputs.forEach(p => this.element.appendChild(renderPort(p, false)));
     
     if (window.Workspace) window.Workspace.updateWires();
   }
@@ -360,19 +389,45 @@ class Attenuator extends Block {
     };
   }
   getBodyHTML() {
-    return `<span style="font-size:24px; font-weight:bold;">&approx;</span>`; // approximate symbol
+    return `<svg width="100%" height="100%" viewBox="0 0 60 40" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="max-height: 40px; display: block; margin: auto;">
+  <path d="M 5 20 L 15 20" />
+  <circle cx="5" cy="20" r="1.5" fill="currentColor" stroke="none" />
+  <path d="M 45 20 L 55 20" />
+  <circle cx="55" cy="20" r="1.5" fill="currentColor" stroke="none" />
+  <rect x="15" y="5" width="30" height="30" />
+  <path d="M 30 10 L 26 12 L 34 16 L 26 20 L 34 24 L 26 28 L 30 30" />
+</svg>`;
   }
 }
 
 class Filter extends Block {
   setupParams() {
     this.params = {
-      Loss_dB: 1.5,
-      Type: 'Bandpass'
+      Type: 'Bandpass',
+      Cutoff_Frequency_MHz: 1000,
+      In_Band_Loss_dB: 1.5,
+      Out_of_Band_Attenuation_dB: 30
     };
   }
   getBodyHTML() {
-    return `BPF`;
+    const type = (this.params.Type || 'Bandpass').toLowerCase();
+    let tildes = `
+      <path d="M 23 10 Q 26.5 7 30 10 T 37 10" />
+      ${['highpass', 'bandpass'].includes(type) ? '<path d="M 24 13 L 36 7" />' : ''}
+      <path d="M 23 20 Q 26.5 17 30 20 T 37 20" />
+      ${['lowpass', 'highpass', 'bandstop'].includes(type) ? '<path d="M 24 23 L 36 17" />' : ''}
+      <path d="M 23 30 Q 26.5 27 30 30 T 37 30" />
+      ${['lowpass', 'bandpass'].includes(type) ? '<path d="M 24 33 L 36 27" />' : ''}
+    `;
+
+    return `<svg width="100%" height="100%" viewBox="0 0 60 40" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="max-height: 40px; display: block; margin: auto;">
+  <path d="M 5 20 L 15 20" />
+  <circle cx="5" cy="20" r="1.5" fill="currentColor" stroke="none" />
+  <path d="M 45 20 L 55 20" />
+  <circle cx="55" cy="20" r="1.5" fill="currentColor" stroke="none" />
+  <rect x="15" y="2" width="30" height="36" />
+  ${tildes}
+</svg>`;
   }
 }
 
@@ -442,7 +497,16 @@ class Splitter extends Block {
     }
   }
   getBodyHTML() {
-    return `<span style="font-size:24px;">&#9094;</span>`;
+    return `<svg width="100%" height="100%" viewBox="0 0 60 40" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="max-height: 40px; display: block; margin: auto;">
+  <rect x="15" y="5" width="30" height="30" />
+  <path d="M 5 20 L 25 20" />
+  <circle cx="5" cy="20" r="1.5" fill="currentColor" stroke="none" />
+  <polygon points="25,20 35,12 35,28" />
+  <path d="M 35 12 L 55 12" />
+  <path d="M 35 28 L 55 28" />
+  <circle cx="55" cy="12" r="1.5" fill="currentColor" stroke="none" />
+  <circle cx="55" cy="28" r="1.5" fill="currentColor" stroke="none" />
+</svg>`;
   }
 }
 
@@ -466,7 +530,16 @@ class Combiner extends Block {
     }
   }
   getBodyHTML() {
-    return `<span style="font-size:24px;">&#8882;</span>`;
+    return `<svg width="100%" height="100%" viewBox="0 0 60 40" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="max-height: 40px; display: block; margin: auto;">
+  <rect x="15" y="5" width="30" height="30" />
+  <path d="M 5 12 L 25 12" />
+  <path d="M 5 28 L 25 28" />
+  <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none" />
+  <circle cx="5" cy="28" r="1.5" fill="currentColor" stroke="none" />
+  <polygon points="25,12 25,28 35,20" />
+  <path d="M 35 20 L 55 20" />
+  <circle cx="55" cy="20" r="1.5" fill="currentColor" stroke="none" />
+</svg>`;
   }
 }
 
@@ -479,7 +552,14 @@ class Load extends Block {
     this.outputs = [];
   }
   getBodyHTML() {
-    return `<span style="font-size:20px;">&#8486;</span>`;
+    return `<svg width="100%" height="100%" viewBox="0 0 60 64" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="max-height: 50px; display: block; margin: auto;">
+  <circle cx="10" cy="20" r="1.5" fill="currentColor" stroke="none" />
+  <path d="M 10 20 L 30 20 L 30 25" />
+  <path d="M 30 25 L 25 27.5 L 35 32.5 L 25 37.5 L 35 42.5 L 25 47.5 L 30 50 L 30 52" />
+  <path d="M 22 52 L 38 52" />
+  <path d="M 25 55 L 35 55" />
+  <path d="M 28 58 L 32 58" />
+</svg>`;
   }
 }
 
@@ -494,11 +574,11 @@ class Mixer extends Block {
   }
   setupPorts() {
     this.inputs = [
-      { id: 'rf', offsetY: 30 },
-      { id: 'lo', offsetY: 50 }
+      { id: 'rf', offsetY: 40, label: 'RF' },
+      { id: 'lo', offsetY: 0, offsetX: 40, align: 'top', label: 'LO' }
     ];
     this.outputs = [
-      { id: 'if', offsetY: 40 }
+      { id: 'if', offsetY: 40, label: 'IF' }
     ];
   }
   getBodyHTML() {

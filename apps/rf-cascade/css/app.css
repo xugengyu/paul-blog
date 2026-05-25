@@ -488,3 +488,35 @@ html, body {
   stroke: #3498db !important;
   stroke-width: 4px;
 }
+
+.port--top {
+  left: 50% !important;
+  top: -8px !important;
+  transform: translateX(-50%) !important;
+}
+
+.port-label {
+  position: absolute;
+  font-size: 10px;
+  color: var(--text-secondary);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.port--top .port-label {
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -2px);
+}
+
+.port--in:not(.port--top) .port-label {
+  right: 100%;
+  top: 50%;
+  transform: translate(-4px, -50%);
+}
+
+.port--out .port-label {
+  left: 100%;
+  top: 50%;
+  transform: translate(4px, -50%);
+}

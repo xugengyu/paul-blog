@@ -379,13 +379,25 @@ const App = {
       const inputWrapper = document.createElement('div');
       inputWrapper.className = 'param-input-wrapper';
       
-      const input = document.createElement('input');
-      input.type = isNum ? 'number' : 'text';
-      if (isNum) {
-        input.step = 'any';
+      const isTypeSelect = key === 'Type' && block.type === 'Filter';
+      
+      let input;
+      if (isTypeSelect) {
+        input = document.createElement('select');
+        ['Lowpass', 'Highpass', 'Bandpass', 'Bandstop'].forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt;
+          option.textContent = opt;
+          input.appendChild(option);
+        });
+        input.value = val;
+      } else {
+        input = document.createElement('input');
+        input.type = isNum ? 'number' : 'text';
+        if (isNum) input.step = 'any';
+        input.value = val;
       }
       input.dataset.key = key;
-      input.value = val;
       
       inputWrapper.appendChild(input);
       
@@ -604,11 +616,17 @@ const App = {
         nextBlockGain = block.params.Gain_dB;
         nextBlockNF = block.params.NF_dB;
         log += `  Gain: ${block.params.Gain_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
-      } else if (block.type === 'Attenuator' || block.type === 'Filter') {
+      } else if (block.type === 'Attenuator') {
         power_dBm -= block.params.Loss_dB;
         nextBlockGain = -block.params.Loss_dB;
         nextBlockNF = block.params.Loss_dB;
         log += `  Loss: ${block.params.Loss_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+      } else if (block.type === 'Filter') {
+        let loss = block.params.In_Band_Loss_dB !== undefined ? block.params.In_Band_Loss_dB : (block.params.Loss_dB || 0);
+        power_dBm -= loss;
+        nextBlockGain = -loss;
+        nextBlockNF = loss;
+        log += `  Loss: ${loss} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
       } else if (block.type === 'Combiner') {
         power_dBm -= block.params.Loss_dB;
         nextBlockGain = -block.params.Loss_dB;
