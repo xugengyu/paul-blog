@@ -182,8 +182,16 @@ const App = {
       window.location.href = '../../apps.html';
     });
 
-    document.getElementById('btn-calculate').addEventListener('click', () => {
-      this.calculateCascade();
+    document.getElementById('btn-calculate').addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      const success = this.calculateCascade();
+      if (!success) {
+        btn.classList.add('app-btn--danger');
+        btn.textContent = 'Simulate ⚠';
+      } else {
+        btn.classList.remove('app-btn--danger');
+        btn.textContent = 'Simulate';
+      }
     });
 
     // Settings button
@@ -597,7 +605,7 @@ const App = {
 
     if (simBlocks.length === 0) {
       display.textContent = 'Workspace is empty.';
-      return;
+      return false;
     }
 
     // Only allow SignalSource to act as a valid source for simulation
@@ -605,7 +613,7 @@ const App = {
 
     if (startBlocks.length === 0) {
       display.textContent = 'Error: No Signal Source found in the schematic. Simulation aborted.';
-      return;
+      return false;
     }
 
     let log = `--- Cascade Analysis ---\n\n`;
@@ -624,7 +632,8 @@ const App = {
       
       if (readyIdx === -1) {
         log += `\nError: Cycle detected or unresolved dependency in the graph.\n`;
-        break;
+        display.textContent = log;
+        return false;
       }
       
       let block = queue.splice(readyIdx, 1)[0];
@@ -867,6 +876,7 @@ const App = {
     }
     
     display.textContent = log;
+    return true;
   }
 };
 
