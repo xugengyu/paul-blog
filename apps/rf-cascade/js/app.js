@@ -599,16 +599,13 @@ const App = {
     let queue = [...startBlocks];
     let processed = new Set();
     
-    const inputSignals = {};
-    simBlocks.forEach(b => {
-      inputSignals[b.id] = {};
-    });
+    const wireSignals = {};
 
     while (queue.length > 0) {
       // Find a block that is ready (all incoming wires have provided signals)
       let readyIdx = queue.findIndex(b => {
         const incomingWires = wires.filter(w => w.targetId === b.id);
-        return incomingWires.every(w => inputSignals[b.id][w.targetPort] !== undefined);
+        return incomingWires.every(w => wireSignals[w.id] !== undefined);
       });
       
       if (readyIdx === -1) {
@@ -647,8 +644,9 @@ const App = {
       } else if (block.type === 'Combiner') {
         // Combiner sums linear power and combines frequencies
         let combinedSpectrumMap = new Map();
+        let sumInvOip3 = 0, sumInvP1db = 0;
         incomingWires.forEach(w => {
-          let sig = inputSignals[block.id][w.targetPort];
+          let sig = wireSignals[w.id];
           if (sig) {
             if (sig.totalF > blockTotalF) blockTotalF = sig.totalF;
             if (sig.totalGainLinear > blockTotalGainLinear) blockTotalGainLinear = sig.totalGainLinear;
@@ -669,8 +667,10 @@ const App = {
         log += `  Combined Pin: ${blockPin.toFixed(2)} dBm\n`;
       } else if (block.type === 'Mixer') {
         // Mixer takes RF from 'rf' input port, LO from 'lo' input port
-        const sigRF = inputSignals[block.id]['rf'];
-        const sigLO = inputSignals[block.id]['lo'];
+        const rfWires = incomingWires.filter(w => w.targetPort === 'rf');
+        const loWires = incomingWires.filter(w => w.targetPort === 'lo');
+        const sigRF = rfWires.length > 0 ? wireSignals[rfWires[0].id] : null;
+        const sigLO = loWires.length > 0 ? wireSignals[loWires[0].id] : null;
         
         if (sigRF) {
           blockSpectrum = sigRF.spectrum || [];
@@ -696,8 +696,8 @@ const App = {
         log += `  LO Freq: ${loFreq} MHz\n`;
         block.currentLOFreq = loFreq;
       } else {
-        // Standard block (1 input)
-        let sig = inputSignals[block.id][incomingWires[0].targetPort];
+        // Standard block (1 input, or we take the first available wire)
+        let sig = incomingWires.length > 0 ? wireSignals[incomingWires[0].id] : null;
         if (sig) {
           blockSpectrum = sig.spectrum || [];
           blockPin = getP(blockSpectrum);
@@ -836,7 +836,7 @@ const App = {
       
       const outWires = wires.filter(w => w.sourceId === block.id);
       outWires.forEach(w => {
-        inputSignals[w.targetId][w.targetPort] = {
+        wireSignals[w.id] = {
           power_dBm: power_dBm,
           totalF: blockTotalF,
           totalGainLinear: blockTotalGainLinear,
