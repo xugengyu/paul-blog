@@ -379,12 +379,22 @@ const App = {
       const inputWrapper = document.createElement('div');
       inputWrapper.className = 'param-input-wrapper';
       
-      const isTypeSelect = key === 'Type' && block.type === 'Filter';
+      const isFilterTypeSelect = key === 'Type' && block.type === 'Filter';
+      const isMixerTypeSelect = key === 'Type' && block.type === 'Mixer';
       
       let input;
-      if (isTypeSelect) {
+      if (isFilterTypeSelect) {
         input = document.createElement('select');
         ['Lowpass', 'Highpass', 'Bandpass', 'Bandstop'].forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt;
+          option.textContent = opt;
+          input.appendChild(option);
+        });
+        input.value = val;
+      } else if (isMixerTypeSelect) {
+        input = document.createElement('select');
+        ['Downconvertor', 'Upconvertor'].forEach(opt => {
           const option = document.createElement('option');
           option.value = opt;
           option.textContent = opt;

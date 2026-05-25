@@ -619,7 +619,11 @@ const Workspace = {
     else if (this.dragState.type === 'wire') {
       const srcPos = this.getPortCoords(this.dragState.sourceId, this.dragState.sourcePort, 'out');
       if (srcPos) {
-        this.drawBezier(this.tempWire, srcPos.x, srcPos.y, x, y);
+        let tgtAlign = 'left';
+        if (e.target && e.target.classList.contains('port--top')) {
+          tgtAlign = 'top';
+        }
+        this.drawBezier(this.tempWire, srcPos.x, srcPos.y, x, y, 'right', tgtAlign);
       }
     }
     else if (this.dragState.type === 'select') {
@@ -774,8 +778,18 @@ const Workspace = {
     this.wires = this.wires.filter(wire => {
       const srcPos = this.getPortCoords(wire.sourceId, wire.sourcePort, 'out');
       const tgtPos = this.getPortCoords(wire.targetId, wire.targetPort, 'in');
+      
+      let srcAlign = 'right';
+      let tgtAlign = 'left';
+      
+      const tgtBlock = this.blocks.find(b => b.id === wire.targetId);
+      if (tgtBlock) {
+         const p = tgtBlock.inputs.find(p => p.id === wire.targetPort);
+         if (p && p.align) tgtAlign = p.align;
+      }
+      
       if (srcPos && tgtPos) {
-        this.drawBezier(wire.element, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y);
+        this.drawBezier(wire.element, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y, srcAlign, tgtAlign);
         return true;
       } else {
         if (wire.element) wire.element.remove();
@@ -784,12 +798,25 @@ const Workspace = {
     });
   },
 
-  drawBezier(pathEl, x1, y1, x2, y2) {
+  drawBezier(pathEl, x1, y1, x2, y2, srcAlign = 'right', tgtAlign = 'left') {
     const dx = Math.abs(x2 - x1) * 0.5;
-    const cp1x = x1 + Math.max(dx, 40);
-    const cp1y = y1;
-    const cp2x = x2 - Math.max(dx, 40);
-    const cp2y = y2;
+    const dy = Math.abs(y2 - y1) * 0.5;
+    
+    let cp1x = x1, cp1y = y1;
+    let cp2x = x2, cp2y = y2;
+    
+    if (srcAlign === 'right') {
+      cp1x = x1 + Math.max(dx, 60);
+      cp1y = y1;
+    }
+    
+    if (tgtAlign === 'left') {
+      cp2x = x2 - Math.max(dx, 60);
+      cp2y = y2;
+    } else if (tgtAlign === 'top') {
+      cp2x = x2;
+      cp2y = y2 - Math.max(dy, 60);
+    }
     
     const d = `M ${x1} ${y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`;
     pathEl.setAttribute('d', d);

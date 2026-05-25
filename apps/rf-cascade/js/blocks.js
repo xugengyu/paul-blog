@@ -92,9 +92,10 @@ class Block {
       inputRow.style.cssText = 'display: flex; gap: 4px; align-items: center;';
 
       let input;
-      const isTypeSelect = paramKey === 'Type' && this.type === 'Filter';
+      const isFilterTypeSelect = paramKey === 'Type' && this.type === 'Filter';
+      const isMixerTypeSelect = paramKey === 'Type' && this.type === 'Mixer';
 
-      if (isTypeSelect) {
+      if (isFilterTypeSelect) {
         input = document.createElement('select');
         ['Lowpass', 'Highpass', 'Bandpass', 'Bandstop'].forEach(opt => {
           const option = document.createElement('option');
@@ -103,6 +104,15 @@ class Block {
           input.appendChild(option);
         });
         input.value = currentVal || 'Bandpass';
+      } else if (isMixerTypeSelect) {
+        input = document.createElement('select');
+        ['Downconvertor', 'Upconvertor'].forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt;
+          option.textContent = opt;
+          input.appendChild(option);
+        });
+        input.value = currentVal || 'Downconvertor';
       } else {
         input = document.createElement('input');
         input.type = typeof currentVal === 'number' ? 'number' : 'text';
@@ -566,6 +576,7 @@ class Load extends Block {
 class Mixer extends Block {
   setupParams() {
     this.params = {
+      Type: 'Downconvertor',
       Conversion_Gain_dB: -6.0,
       NF_dB: 6.0,
       P1dB_dBm: 5.0,
@@ -580,6 +591,15 @@ class Mixer extends Block {
     this.outputs = [
       { id: 'if', offsetY: 40, label: 'IF' }
     ];
+  }
+  updatePortsBasedOnParams() {
+    if (this.params.Type === 'Upconvertor') {
+      this.inputs[0].label = 'IF';
+      this.outputs[0].label = 'RF';
+    } else {
+      this.inputs[0].label = 'RF';
+      this.outputs[0].label = 'IF';
+    }
   }
   getBodyHTML() {
     return `<span style="font-size:20px; font-weight:bold;">&#8855;</span>`;
