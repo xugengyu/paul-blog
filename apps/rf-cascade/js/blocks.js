@@ -20,8 +20,8 @@ class Block {
 
   setupPorts() {
     // Override in subclasses
-    this.inputs = [{ id: 'in1', offsetY: 40 }];
-    this.outputs = [{ id: 'out1', offsetY: 40 }];
+    this.inputs = [{ id: 'in1', offsetY: 40, label: 'In' }];
+    this.outputs = [{ id: 'out1', offsetY: 40, label: 'Out' }];
   }
 
   render() {
@@ -460,7 +460,7 @@ class SignalSource extends Block {
   }
   setupPorts() {
     this.inputs = []; // No input
-    this.outputs = [{ id: 'out1', offsetY: 40 }];
+    this.outputs = [{ id: 'out1', offsetY: 40, label: 'Out' }];
   }
   getBodyHTML() {
     return `<span style="font-size:24px;">&#8767;</span>`; // Sine wave symbol
@@ -476,8 +476,8 @@ class FreeSpaceLink extends Block {
     };
   }
   setupPorts() {
-    this.inputs = [{ id: 'in1', offsetY: 40 }];
-    this.outputs = [{ id: 'out1', offsetY: 40 }];
+    this.inputs = [{ id: 'in1', offsetY: 40, label: 'In' }];
+    this.outputs = [{ id: 'out1', offsetY: 40, label: 'Out' }];
   }
   getBodyHTML() {
     return `<svg width="100%" height="100%" viewBox="0 0 100 40" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="max-height: 40px; display: block; margin: auto;">
@@ -504,7 +504,7 @@ class Splitter extends Block {
     };
   }
   setupPorts() {
-    this.inputs = [{ id: 'in1', offsetY: 40 }];
+    this.inputs = [{ id: 'in1', offsetY: 40, label: 'In' }];
     this.updatePortsBasedOnParams();
   }
   updatePortsBasedOnParams() {
@@ -512,7 +512,7 @@ class Splitter extends Block {
     this.outputs = [];
     const h = this.element ? this.element.offsetHeight : 80;
     for(let i=0; i<numOuts; i++) {
-      this.outputs.push({ id: 'out'+(i+1), offsetY: h / (numOuts + 1) * (i + 1) });
+      this.outputs.push({ id: 'out'+(i+1), offsetY: h / (numOuts + 1) * (i + 1), label: 'Out ' + (i+1) });
     }
   }
   getBodyHTML() {
@@ -537,7 +537,7 @@ class Combiner extends Block {
     };
   }
   setupPorts() {
-    this.outputs = [{ id: 'out1', offsetY: 40 }];
+    this.outputs = [{ id: 'out1', offsetY: 40, label: 'Out' }];
     this.updatePortsBasedOnParams();
   }
   updatePortsBasedOnParams() {
@@ -545,7 +545,7 @@ class Combiner extends Block {
     this.inputs = [];
     const h = this.element ? this.element.offsetHeight : 80;
     for(let i=0; i<numIns; i++) {
-      this.inputs.push({ id: 'in'+(i+1), offsetY: h / (numIns + 1) * (i + 1) });
+      this.inputs.push({ id: 'in'+(i+1), offsetY: h / (numIns + 1) * (i + 1), label: 'In ' + (i+1) });
     }
   }
   getBodyHTML() {
@@ -567,7 +567,7 @@ class Load extends Block {
     this.params = {};
   }
   setupPorts() {
-    this.inputs = [{ id: 'in1', offsetY: 40 }];
+    this.inputs = [{ id: 'in1', offsetY: 40, label: 'In' }];
     this.outputs = [];
   }
   getBodyHTML() {
