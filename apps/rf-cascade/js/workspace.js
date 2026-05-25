@@ -815,23 +815,30 @@ const Workspace = {
   },
 
   drawBezier(pathEl, x1, y1, x2, y2, srcAlign = 'right', tgtAlign = 'left') {
-    const dx = Math.abs(x2 - x1) * 0.5;
-    const dy = Math.abs(y2 - y1) * 0.5;
+    const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    const stiffness = Math.max(dist * 0.4, 60);
     
     let cp1x = x1, cp1y = y1;
     let cp2x = x2, cp2y = y2;
     
     if (srcAlign === 'right') {
-      cp1x = x1 + Math.max(dx, 60);
-      cp1y = y1;
+      cp1x = x1 + stiffness;
+    } else if (srcAlign === 'left') {
+      cp1x = x1 - stiffness;
+    } else if (srcAlign === 'top') {
+      cp1y = y1 - stiffness;
+    } else if (srcAlign === 'bottom') {
+      cp1y = y1 + stiffness;
     }
     
     if (tgtAlign === 'left') {
-      cp2x = x2 - Math.max(dx, 60);
-      cp2y = y2;
+      cp2x = x2 - stiffness;
+    } else if (tgtAlign === 'right') {
+      cp2x = x2 + stiffness;
     } else if (tgtAlign === 'top') {
-      cp2x = x2;
-      cp2y = y2 - Math.max(dy, 60);
+      cp2y = y2 - stiffness;
+    } else if (tgtAlign === 'bottom') {
+      cp2y = y2 + stiffness;
     }
     
     const d = `M ${x1} ${y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`;
