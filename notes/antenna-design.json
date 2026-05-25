@@ -2,5 +2,9 @@
   "id": "antenna-design",
   "title": "Antenna Design",
   "category": "RF Engineering",
-  "content": "<p>An antenna converts guided electromagnetic waves into free-space radiation (and vice versa). Key parameters: gain (dBi), beam-width, polarisation, bandwidth, and radiation efficiency.</p>\n<p>Satellite ground stations commonly use parabolic reflectors (high gain, narrow beam), while spacecraft may use horn, patch array, or phased-array antennas depending on coverage requirements.</p>\n"
+  "content": "<p>An antenna converts guided electromagnetic waves into free-space radiation (and vice versa). Key parameters: gain (dBi), beam-width, polarisation, bandwidth, and radiation efficiency.</p>\n<p>Satellite ground stations commonly use parabolic reflectors (high gain, narrow beam), while spacecraft may use horn, patch array, or phased-array antennas depending on coverage requirements.</p>\n",
+  "connections": [
+    "antenna-gain",
+    "link-budget"
+  ]
 }

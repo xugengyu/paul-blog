@@ -2,5 +2,8 @@
   "id": "fspl",
   "title": "Free-Space Path Loss",
   "category": "Satellite Comms",
-  "content": "<p>FSPL describes the inverse-square-law spreading of an isotropic wavefront: <code>FSPL(dB) = 20 log₁₀(d) + 20 log₁₀(f) + 32.45</code> (d in km, f in MHz).</p>\n<p>At Ka-band (26 GHz) to a GEO satellite (35 786 km), FSPL alone exceeds 213 dB — which is why high-gain antennas are essential.</p>\n"
+  "content": "<p>FSPL describes the inverse-square-law spreading of an isotropic wavefront: <code>FSPL(dB) = 20 log₁₀(d) + 20 log₁₀(f) + 32.45</code> (d in km, f in MHz).</p>\n<p>At Ka-band (26 GHz) to a GEO satellite (35 786 km), FSPL alone exceeds 213 dB — which is why high-gain antennas are essential.</p>\n",
+  "connections": [
+    "frequency-bands"
+  ]
 }

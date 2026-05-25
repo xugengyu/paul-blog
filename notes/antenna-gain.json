@@ -2,5 +2,6 @@
   "id": "antenna-gain",
   "title": "Antenna Gain",
   "category": "Satellite Comms",
-  "content": "<p>Gain quantifies how much an antenna concentrates power in a particular direction compared to an isotropic radiator. For a parabolic dish: <code>G ≈ η (π D / λ)²</code>, where η is aperture efficiency (~0.55–0.7).</p>\n<p>A 1.2 m dish at Ku-band (12 GHz) yields roughly 40 dBi — enough to close a DVB-S2 link to GEO with modest transmit power.</p>\n"
+  "content": "<p>Gain quantifies how much an antenna concentrates power in a particular direction compared to an isotropic radiator. For a parabolic dish: <code>G ≈ η (π D / λ)²</code>, where η is aperture efficiency (~0.55–0.7).</p>\n<p>A 1.2 m dish at Ku-band (12 GHz) yields roughly 40 dBi — enough to close a DVB-S2 link to GEO with modest transmit power.</p>\n",
+  "connections": []
 }

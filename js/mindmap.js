@@ -34,7 +34,19 @@
     });
 
     var nodes = await Promise.all(notePromises);
-    var links = manifest.links;
+    
+    // Build links from individual node connections
+    var links = [];
+    nodes.forEach(function (node) {
+      if (node.connections && Array.isArray(node.connections)) {
+        node.connections.forEach(function (targetId) {
+          links.push({
+            source: node.id,
+            target: targetId
+          });
+        });
+      }
+    });
 
     return { nodes: nodes, links: links };
   }
