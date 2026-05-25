@@ -307,6 +307,10 @@ const App = {
       this.modal.classList.add('hidden');
       // Intentionally not calculating cascade automatically
     });
+
+    document.getElementById('plot-close-btn').addEventListener('click', () => {
+      document.getElementById('plot-modal').classList.add('hidden');
+    });
   },
 
   showContextMenu(x, y, block) {
@@ -359,6 +363,45 @@ const App = {
 
   hideContextMenu() {
     this.contextMenu.classList.add('hidden');
+  },
+
+  showPlotModal(block) {
+    if (typeof Plotly === 'undefined') {
+      alert('Plotly library is not loaded yet.');
+      return;
+    }
+    const modal = document.getElementById('plot-modal');
+    modal.classList.remove('hidden');
+
+    const inSpec = block.inputSpectrum || [];
+    const outSpec = block.outputSpectrum || [];
+
+    const trace1 = {
+      x: inSpec.map(t => t.freq),
+      y: inSpec.map(t => t.power_dBm),
+      type: 'bar',
+      name: 'Input',
+      marker: { color: 'rgba(54, 162, 235, 0.7)' },
+      width: 10
+    };
+    const trace2 = {
+      x: outSpec.map(t => t.freq),
+      y: outSpec.map(t => t.power_dBm),
+      type: 'bar',
+      name: 'Output',
+      marker: { color: 'rgba(255, 99, 132, 0.7)' },
+      width: 10
+    };
+
+    const layout = {
+      title: `${block.type} Spectrum`,
+      barmode: 'group',
+      xaxis: { title: 'Frequency (MHz)' },
+      yaxis: { title: 'Power (dBm)' },
+      margin: { l: 50, r: 20, t: 40, b: 40 }
+    };
+
+    Plotly.newPlot('plot-container', [trace1, trace2], layout, { responsive: true });
   },
 
   openParamModal(block) {
@@ -533,12 +576,13 @@ const App = {
       
       log += `Block: ${block.type} (${block.id.substring(0, 8)})\n`;
       
-      let blockPin = -100;
       let blockTotalF = 1;
       let blockTotalGainLinear = 1;
       let blockTotalOip3Linear = Infinity;
       let blockTotalP1dbLinear = Infinity;
-      let blockFrequencies = [];
+      let blockSpectrum = [];
+      const getP = (spec) => spec.length ? 10 * Math.log10(spec.reduce((acc, t) => acc + Math.pow(10, t.power_dBm/10), 0)) : -100;
+      let blockPin = -100;
       
       const incomingWires = wires.filter(w => w.targetId === block.id);
       
@@ -552,32 +596,31 @@ const App = {
         blockTotalP1dbLinear = Infinity;
         
         let startFreq = block.params.Frequency_MHz !== undefined ? block.params.Frequency_MHz : 2400;
-        blockFrequencies = [startFreq];
+        blockSpectrum = [{ freq: startFreq, power_dBm: blockPin }];
         
         log += `  Initial Power: ${blockPin.toFixed(2)} dBm\n`;
       } else if (block.type === 'Combiner') {
         // Combiner sums linear power and combines frequencies
-        let sumMw = 0;
-        let sumInvOip3 = 0;
-        let sumInvP1db = 0;
-        let combinedFreqs = [];
+        let combinedSpectrumMap = new Map();
         incomingWires.forEach(w => {
           let sig = inputSignals[block.id][w.targetPort];
           if (sig) {
-            sumMw += Math.pow(10, sig.power_dBm / 10);
             if (sig.totalF > blockTotalF) blockTotalF = sig.totalF;
             if (sig.totalGainLinear > blockTotalGainLinear) blockTotalGainLinear = sig.totalGainLinear;
             sumInvOip3 += 1 / (sig.totalOip3Linear || Infinity);
             sumInvP1db += 1 / (sig.totalP1dbLinear || Infinity);
-            if (sig.frequencies) {
-              combinedFreqs.push(...sig.frequencies);
+            if (sig.spectrum) {
+              sig.spectrum.forEach(t => {
+                let mw = Math.pow(10, t.power_dBm / 10);
+                combinedSpectrumMap.set(t.freq, (combinedSpectrumMap.get(t.freq) || 0) + mw);
+              });
             }
           }
         });
-        blockPin = 10 * Math.log10(sumMw);
+        blockSpectrum = Array.from(combinedSpectrumMap.entries()).map(([freq, mw]) => ({ freq, power_dBm: 10 * Math.log10(mw) }));
+        blockPin = getP(blockSpectrum);
         blockTotalOip3Linear = sumInvOip3 > 0 ? 1 / sumInvOip3 : Infinity;
         blockTotalP1dbLinear = sumInvP1db > 0 ? 1 / sumInvP1db : Infinity;
-        blockFrequencies = [...new Set(combinedFreqs)].sort((a, b) => a - b);
         log += `  Combined Pin: ${blockPin.toFixed(2)} dBm\n`;
       } else if (block.type === 'Mixer') {
         // Mixer takes RF from 'rf' input port, LO from 'lo' input port
@@ -585,24 +628,24 @@ const App = {
         const sigLO = inputSignals[block.id]['lo'];
         
         if (sigRF) {
-          blockPin = sigRF.power_dBm;
+          blockSpectrum = sigRF.spectrum || [];
+          blockPin = getP(blockSpectrum);
           blockTotalF = sigRF.totalF;
           blockTotalGainLinear = sigRF.totalGainLinear;
           blockTotalOip3Linear = sigRF.totalOip3Linear || Infinity;
           blockTotalP1dbLinear = sigRF.totalP1dbLinear || Infinity;
-          blockFrequencies = sigRF.frequencies || [];
         } else {
           blockPin = -100;
           blockTotalF = 1;
           blockTotalGainLinear = 1;
           blockTotalOip3Linear = Infinity;
           blockTotalP1dbLinear = Infinity;
-          blockFrequencies = [];
+          blockSpectrum = [];
         }
         
         let loFreq = 0;
-        if (sigLO && sigLO.frequencies && sigLO.frequencies.length > 0) {
-          loFreq = sigLO.frequencies[0];
+        if (sigLO && sigLO.spectrum && sigLO.spectrum.length > 0) {
+          loFreq = sigLO.spectrum[0].freq;
         }
         log += `  RF Pin: ${blockPin.toFixed(2)} dBm\n`;
         log += `  LO Freq: ${loFreq} MHz\n`;
@@ -611,86 +654,78 @@ const App = {
         // Standard block (1 input)
         let sig = inputSignals[block.id][incomingWires[0].targetPort];
         if (sig) {
-          blockPin = sig.power_dBm;
+          blockSpectrum = sig.spectrum || [];
+          blockPin = getP(blockSpectrum);
           blockTotalF = sig.totalF;
           blockTotalGainLinear = sig.totalGainLinear;
           blockTotalOip3Linear = sig.totalOip3Linear !== undefined ? sig.totalOip3Linear : Infinity;
           blockTotalP1dbLinear = sig.totalP1dbLinear !== undefined ? sig.totalP1dbLinear : Infinity;
-          blockFrequencies = sig.frequencies || [];
         }
         log += `  Pin: ${blockPin.toFixed(2)} dBm\n`;
       }
       
       block.calculatedPIn = incomingWires.length > 0 ? blockPin : undefined;
+      block.inputSpectrum = JSON.parse(JSON.stringify(blockSpectrum));
+      let outSpectrum = JSON.parse(JSON.stringify(blockSpectrum));
       
-      let power_dBm = blockPin;
       let nextBlockNF = 0;
       let nextBlockGain = 0;
       
       if (block.type === 'Amplifier') {
-        power_dBm += block.params.Gain_dB;
+        outSpectrum.forEach(t => t.power_dBm += block.params.Gain_dB);
         nextBlockGain = block.params.Gain_dB;
         nextBlockNF = block.params.NF_dB;
-        log += `  Gain: ${block.params.Gain_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+        log += `  Gain: ${block.params.Gain_dB} dB\n`;
       } else if (block.type === 'Attenuator') {
-        power_dBm -= block.params.Loss_dB;
+        outSpectrum.forEach(t => t.power_dBm -= block.params.Loss_dB);
         nextBlockGain = -block.params.Loss_dB;
         nextBlockNF = block.params.Loss_dB;
-        log += `  Loss: ${block.params.Loss_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+        log += `  Loss: ${block.params.Loss_dB} dB\n`;
       } else if (block.type === 'Filter') {
         let loss = block.params.In_Band_Loss_dB !== undefined ? block.params.In_Band_Loss_dB : (block.params.Loss_dB || 0);
-        power_dBm -= loss;
+        let outBand = block.params.Out_of_Band_Attenuation_dB !== undefined ? block.params.Out_of_Band_Attenuation_dB : 30;
+        let filterType = block.params.Type || 'Bandpass';
+        outSpectrum.forEach(t => {
+          let pass = true;
+          if (filterType === 'Lowpass' && t.freq > block.params.Cutoff_Frequency_MHz) pass = false;
+          else if (filterType === 'Highpass' && t.freq < block.params.Cutoff_Frequency_MHz) pass = false;
+          else if (filterType === 'Bandpass' && (t.freq < block.params.Lower_Cutoff_MHz || t.freq > block.params.Upper_Cutoff_MHz)) pass = false;
+          else if (filterType === 'Bandstop' && (t.freq > block.params.Lower_Cutoff_MHz && t.freq < block.params.Upper_Cutoff_MHz)) pass = false;
+          t.power_dBm -= pass ? loss : outBand;
+        });
         nextBlockGain = -loss;
         nextBlockNF = loss;
-        log += `  Loss: ${loss} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
-
-        let filteredFreqs = [];
-        let filterType = block.params.Type || 'Bandpass';
-        blockFrequencies.forEach(f => {
-          let pass = true;
-          if (filterType === 'Lowpass') {
-             if (f > block.params.Cutoff_Frequency_MHz) pass = false;
-          } else if (filterType === 'Highpass') {
-             if (f < block.params.Cutoff_Frequency_MHz) pass = false;
-          } else if (filterType === 'Bandpass') {
-             if (f < block.params.Lower_Cutoff_MHz || f > block.params.Upper_Cutoff_MHz) pass = false;
-          } else if (filterType === 'Bandstop') {
-             if (f > block.params.Lower_Cutoff_MHz && f < block.params.Upper_Cutoff_MHz) pass = false;
-          }
-          if (pass) filteredFreqs.push(f);
-        });
-        blockFrequencies = filteredFreqs;
       } else if (block.type === 'Combiner') {
-        power_dBm -= block.params.Loss_dB;
+        outSpectrum.forEach(t => t.power_dBm -= block.params.Loss_dB);
         nextBlockGain = -block.params.Loss_dB;
         nextBlockNF = block.params.Loss_dB;
-        log += `  Combiner Loss: ${block.params.Loss_dB} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
       } else if (block.type === 'Splitter') {
         let numOuts = Math.max(2, Math.floor(block.params.Number_of_Outputs));
         let splitLoss = 10 * Math.log10(numOuts);
-        power_dBm -= (block.params.Loss_dB + splitLoss);
+        outSpectrum.forEach(t => t.power_dBm -= (block.params.Loss_dB + splitLoss));
         nextBlockGain = -(block.params.Loss_dB + splitLoss);
         nextBlockNF = block.params.Loss_dB;
-        log += `  Split Loss: ${(block.params.Loss_dB + splitLoss).toFixed(2)} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
       } else if (block.type === 'Mixer') {
         let convGain = block.params.Conversion_Gain_dB !== undefined ? block.params.Conversion_Gain_dB : -6.0;
-        power_dBm += convGain;
+        let loFreq = block.currentLOFreq || 0;
+        let mixedMap = new Map();
+        outSpectrum.forEach(t => {
+           let f1 = t.freq + loFreq;
+           let f2 = Math.abs(t.freq - loFreq);
+           let p = t.power_dBm + convGain;
+           let mw = Math.pow(10, p/10);
+           mixedMap.set(f1, (mixedMap.get(f1) || 0) + mw);
+           mixedMap.set(f2, (mixedMap.get(f2) || 0) + mw);
+        });
+        outSpectrum = Array.from(mixedMap.entries()).map(([freq, mw]) => ({ freq, power_dBm: 10 * Math.log10(mw) }));
         nextBlockGain = convGain;
         nextBlockNF = block.params.NF_dB !== undefined ? block.params.NF_dB : 6.0;
-        log += `  Conv. Gain: ${convGain.toFixed(2)} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
-        
-        // Frequency translation
-        let loFreq = block.currentLOFreq || 0;
-        let mixedFreqs = [];
-        blockFrequencies.forEach(f => {
-          mixedFreqs.push(f + loFreq);
-          let diff = Math.abs(f - loFreq);
-          if (diff >= 0) {
-            mixedFreqs.push(diff);
-          }
-        });
-        blockFrequencies = [...new Set(mixedFreqs)].sort((a, b) => a - b);
-      } else if (block.type === 'Load') {
+      }
+      
+      block.outputSpectrum = outSpectrum;
+      let power_dBm = getP(outSpectrum);
+      
+      if (block.type === 'Load') {
         log += `  Absorbed Power: ${blockPin.toFixed(2)} dBm\n\n`;
         block.calculatedPOut = undefined;
         block.updateParamDisplay();
@@ -739,12 +774,12 @@ const App = {
       block.calculatedOIP3 = blockTotalOip3Linear !== Infinity ? 10 * Math.log10(blockTotalOip3Linear) : Infinity;
       block.calculatedIIP3 = block.calculatedOIP3 !== Infinity ? block.calculatedOIP3 - (10 * Math.log10(blockTotalGainLinear)) : Infinity;
       block.calculatedP1dB_out = blockTotalP1dbLinear !== Infinity ? 10 * Math.log10(blockTotalP1dbLinear) : Infinity;
-      block.calculatedFrequencies = blockFrequencies;
+      block.calculatedFrequencies = outSpectrum.map(t => t.freq);
       
       let oip3LogVal = block.calculatedOIP3 !== Infinity ? block.calculatedOIP3.toFixed(2) + ' dBm' : 'inf';
       let iip3LogVal = block.calculatedIIP3 !== Infinity ? block.calculatedIIP3.toFixed(2) + ' dBm' : 'inf';
       let p1dbLogVal = block.calculatedP1dB_out !== Infinity ? block.calculatedP1dB_out.toFixed(2) + ' dBm' : 'inf';
-      let freqLogVal = blockFrequencies.length > 0 ? blockFrequencies.join(', ') + ' MHz' : 'none';
+      let freqLogVal = outSpectrum.length > 0 ? outSpectrum.map(t => t.freq).join(', ') + ' MHz' : 'none';
       log += `  Cascaded OIP3: ${oip3LogVal}\n`;
       log += `  Cascaded P1dB: ${p1dbLogVal}\n`;
       log += `  Cascaded IIP3: ${iip3LogVal}\n`;
@@ -762,7 +797,7 @@ const App = {
           totalGainLinear: blockTotalGainLinear,
           totalOip3Linear: blockTotalOip3Linear,
           totalP1dbLinear: blockTotalP1dbLinear,
-          frequencies: blockFrequencies
+          spectrum: JSON.parse(JSON.stringify(outSpectrum))
         };
         if (!processed.has(w.targetId) && !queue.find(b => b.id === w.targetId)) {
           const tgtBlock = blocks.find(b => b.id === w.targetId);

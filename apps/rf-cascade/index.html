@@ -252,9 +252,23 @@
     </div>
   </div>
 
-  <script src="js/blocks.js?v=24"></script>
-  <script src="js/workspace.js?v=24"></script>
-  <script src="js/app.js?v=24"></script>
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+
+  <!-- Plot Modal -->
+  <div id="plot-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 800px; width: 90%;">
+      <h3>Spectrum Analyzer</h3>
+      <div id="plot-container" style="width: 100%; height: 400px;"></div>
+      <div style="text-align: right; margin-top: 10px;">
+        <button id="plot-close-btn" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/blocks.js?v=25"></script>
+  <script src="js/workspace.js?v=25"></script>
+  <script src="js/app.js?v=25"></script>
 </body>
 
 </html>

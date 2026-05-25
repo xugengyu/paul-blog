@@ -721,6 +721,22 @@ const Workspace = {
         this.tempWire = null;
       }
     }
+    else if (this.dragState.type === 'block') {
+      const rect = this.container.getBoundingClientRect();
+      const endX = (e.clientX - rect.left - this.panX) / this.zoom;
+      const endY = (e.clientY - rect.top - this.panY) / this.zoom;
+      const dx = this.dragState.clickX - endX;
+      const dy = this.dragState.clickY - endY;
+      
+      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+        if (this.dragState.dragBlocks.length === 1) {
+          const clickedBlock = this.dragState.dragBlocks[0].block;
+          if (window.App && window.App.showPlotModal) {
+            window.App.showPlotModal(clickedBlock);
+          }
+        }
+      }
+    }
     else if (this.dragState.type === 'select') {
       if (this.dragState.element) {
         this.dragState.element.remove();
