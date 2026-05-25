@@ -728,14 +728,7 @@ const Workspace = {
       const dx = this.dragState.clickX - endX;
       const dy = this.dragState.clickY - endY;
       
-      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
-        if (this.dragState.dragBlocks.length === 1) {
-          const clickedBlock = this.dragState.dragBlocks[0].block;
-          if (window.App && window.App.showPlotModal) {
-            window.App.showPlotModal(clickedBlock);
-          }
-        }
-      }
+      // Removed left-click plot modal triggering as requested
     }
     else if (this.dragState.type === 'select') {
       if (this.dragState.element) {

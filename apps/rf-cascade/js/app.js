@@ -251,6 +251,13 @@ const App = {
     if (chkLogs) chkLogs.addEventListener('change', updateOptions);
     
     // Context Menu Items
+    document.getElementById('menu-view-spectrum').addEventListener('click', () => {
+      this.hideContextMenu();
+      if (this.activeBlock) {
+        this.showPlotModal(this.activeBlock);
+      }
+    });
+
     document.getElementById('menu-edit').addEventListener('click', () => {
       this.hideContextMenu();
       if (this.activeBlock) {
@@ -324,6 +331,7 @@ const App = {
     const hasSelection = selBlocksCount > 0 || selWiresCount > 0;
     const hasCopied = window.Workspace.clipboard && window.Workspace.clipboard.blocks.length > 0;
 
+    const menuViewSpectrum = document.getElementById('menu-view-spectrum');
     const menuEdit = document.getElementById('menu-edit');
     const menuDelete = document.getElementById('menu-delete');
     const menuCopy = document.getElementById('menu-copy');
@@ -333,10 +341,12 @@ const App = {
     const menuRename = document.getElementById('menu-rename');
 
     if (block && selBlocksCount <= 1 && selWiresCount === 0) {
+      menuViewSpectrum.style.display = 'block';
       menuEdit.style.display = 'block';
       menuRename.style.display = 'block';
       menuDelete.style.display = 'block';
     } else {
+      menuViewSpectrum.style.display = 'none';
       menuEdit.style.display = 'none';
       menuRename.style.display = 'none';
       menuDelete.style.display = 'none';
