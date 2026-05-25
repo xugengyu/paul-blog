@@ -653,15 +653,27 @@ const App = {
       
       if (incomingWires.length === 0) {
         // Source node
-        blockPin = block.params.Power_dBm !== undefined ? block.params.Power_dBm : -100;
+        let pwrParam = block.params.Power_dBm !== undefined ? block.params.Power_dBm : -100;
+        let startFreq = block.params.Frequency_MHz !== undefined ? block.params.Frequency_MHz : 2400;
+        
+        let freqs = String(startFreq).split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+        let pwrs = String(pwrParam).split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+        
+        if (freqs.length === 0) freqs = [2400];
+        if (pwrs.length === 0) pwrs = [-100];
+        
+        blockSpectrum = freqs.map((f, idx) => ({
+           freq: f,
+           power_dBm: pwrs[idx] !== undefined ? pwrs[idx] : pwrs[pwrs.length - 1] 
+        }));
+        
+        blockPin = getP(blockSpectrum);
+        
         let blockNF = block.params.NF_dB || 0;
         blockTotalF = Math.pow(10, blockNF / 10);
         blockTotalGainLinear = 1;
         blockTotalOip3Linear = Infinity;
         blockTotalP1dbLinear = Infinity;
-        
-        let startFreq = block.params.Frequency_MHz !== undefined ? block.params.Frequency_MHz : 2400;
-        blockSpectrum = [{ freq: startFreq, power_dBm: blockPin }];
         
         log += `  Initial Power: ${blockPin.toFixed(2)} dBm\n`;
       } else if (block.type === 'Combiner') {

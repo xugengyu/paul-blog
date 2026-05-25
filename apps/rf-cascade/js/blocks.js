@@ -157,8 +157,14 @@ class Block {
 
       const doSave = () => {
         const valStr = input.value;
-        const newVal = parseFloat(valStr);
-        const finalVal = typeof this.params[paramKey] === 'string' ? valStr : (!isNaN(newVal) ? newVal : this.params[paramKey]);
+        let finalVal;
+        if (typeof this.params[paramKey] === 'string' || valStr.includes(',')) {
+          finalVal = valStr;
+        } else {
+          const newVal = parseFloat(valStr);
+          finalVal = !isNaN(newVal) ? newVal : this.params[paramKey];
+        }
+        
         if (finalVal !== undefined) {
           this.params[paramKey] = finalVal;
           if (this.updateParamsForType) this.updateParamsForType();
