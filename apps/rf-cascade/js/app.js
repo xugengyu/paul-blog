@@ -376,32 +376,77 @@ const App = {
     const inSpec = block.inputSpectrum || [];
     const outSpec = block.outputSpectrum || [];
 
-    const trace1 = {
+    let minPower = Math.min(
+      ...inSpec.map(t => t.power_dBm),
+      ...outSpec.map(t => t.power_dBm)
+    );
+    if (!isFinite(minPower) || minPower > -50) minPower = -100;
+    
+    let maxPower = Math.max(
+      ...inSpec.map(t => t.power_dBm),
+      ...outSpec.map(t => t.power_dBm)
+    );
+    if (!isFinite(maxPower) || maxPower < 0) maxPower = 10;
+    
+    let yMin = minPower - 20;
+
+    let x_in_lines = [], y_in_lines = [];
+    inSpec.forEach(t => {
+      x_in_lines.push(t.freq, t.freq, null);
+      y_in_lines.push(yMin, t.power_dBm, null);
+    });
+    
+    let x_out_lines = [], y_out_lines = [];
+    outSpec.forEach(t => {
+      x_out_lines.push(t.freq, t.freq, null);
+      y_out_lines.push(yMin, t.power_dBm, null);
+    });
+
+    const trace1_lines = {
+      x: x_in_lines,
+      y: y_in_lines,
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: 'rgba(54, 162, 235, 0.7)', width: 2 },
+      showlegend: false,
+      hoverinfo: 'none'
+    };
+    const trace1_markers = {
       x: inSpec.map(t => t.freq),
       y: inSpec.map(t => t.power_dBm),
-      type: 'bar',
+      type: 'scatter',
+      mode: 'markers',
       name: 'Input',
-      marker: { color: 'rgba(54, 162, 235, 0.7)' },
-      width: 10
+      marker: { color: 'rgba(54, 162, 235, 1)', size: 8 }
     };
-    const trace2 = {
+
+    const trace2_lines = {
+      x: x_out_lines,
+      y: y_out_lines,
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: 'rgba(255, 99, 132, 0.7)', width: 2 },
+      showlegend: false,
+      hoverinfo: 'none'
+    };
+    const trace2_markers = {
       x: outSpec.map(t => t.freq),
       y: outSpec.map(t => t.power_dBm),
-      type: 'bar',
+      type: 'scatter',
+      mode: 'markers',
       name: 'Output',
-      marker: { color: 'rgba(255, 99, 132, 0.7)' },
-      width: 10
+      marker: { color: 'rgba(255, 99, 132, 1)', size: 8 }
     };
 
     const layout = {
       title: `${block.type} Spectrum`,
-      barmode: 'group',
       xaxis: { title: 'Frequency (MHz)' },
-      yaxis: { title: 'Power (dBm)' },
-      margin: { l: 50, r: 20, t: 40, b: 40 }
+      yaxis: { title: 'Power (dBm)', range: [yMin, maxPower + 10] },
+      margin: { l: 50, r: 20, t: 40, b: 40 },
+      hovermode: 'closest'
     };
 
-    Plotly.newPlot('plot-container', [trace1, trace2], layout, { responsive: true });
+    Plotly.newPlot('plot-container', [trace1_lines, trace1_markers, trace2_lines, trace2_markers], layout, { responsive: true });
   },
 
   openParamModal(block) {
