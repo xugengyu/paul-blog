@@ -153,7 +153,7 @@ class Block {
       popover.style.left = left + 'px';
 
       input.focus();
-      input.select();
+      if (typeof input.select === 'function') input.select();
 
       const doSave = () => {
         const valStr = input.value;

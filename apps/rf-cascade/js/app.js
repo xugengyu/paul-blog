@@ -459,7 +459,7 @@ const App = {
   },
   
   saveParamsFromModal() {
-    const inputs = document.querySelectorAll('#modal-body input');
+    const inputs = document.querySelectorAll('#modal-body input, #modal-body select');
     inputs.forEach(input => {
       const key = input.dataset.key;
       if (input.type === 'number') {
