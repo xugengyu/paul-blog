@@ -961,8 +961,10 @@ const App = {
         processed.add(block.id);
         continue;
       } else if (block.type !== 'SignalSource') {
-        nextBlockNF = block.params.NF_dB || 0;
-        log += `  (No power effect) -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+        if (!['Amplifier', 'Attenuator', 'Filter', 'Combiner', 'Splitter', 'Mixer', 'FreeSpaceLink'].includes(block.type)) {
+          nextBlockNF = block.params.NF_dB || 0;
+          log += `  (No power effect) -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+        }
       }
       
       if (block.type !== 'SignalSource') {
