@@ -27,7 +27,7 @@ const Workspace = {
   displayOptions: {
     showBlockParams: true,
     showCascadedParams: true,
-    showFrequency: true,
+    showFrequency: false,
     showLogs: true
   },
   

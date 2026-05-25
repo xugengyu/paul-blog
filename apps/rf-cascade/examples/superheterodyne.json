@@ -2,16 +2,18 @@
   "displayOptions": {
     "showBlockParams": true,
     "showCascadedParams": true,
-    "showFrequency": true,
+    "showFrequency": false,
     "showLogs": true
   },
   "blocks": [
     {
       "id": "tx_if",
       "type": "SignalSource",
+      "name": "TX IF Source",
       "x": 40,
       "y": 160,
-      "name": "TX IF Source",
+      "w": 120,
+      "h": 80,
       "params": {
         "Frequency_MHz": 100,
         "Power_dBm": -10,
@@ -21,9 +23,11 @@
     {
       "id": "tx_lo",
       "type": "SignalSource",
-      "x": 240,
-      "y": 40,
       "name": "TX LO",
+      "x": 120,
+      "y": -80,
+      "w": 120,
+      "h": 80,
       "params": {
         "Frequency_MHz": 2300,
         "Power_dBm": 10,
@@ -33,9 +37,11 @@
     {
       "id": "tx_mix",
       "type": "Mixer",
+      "name": "Upconvertor",
       "x": 240,
       "y": 160,
-      "name": "Upconvertor",
+      "w": 120,
+      "h": 80,
       "params": {
         "Type": "Upconvertor",
         "Conversion_Gain_dB": -6,
@@ -47,9 +53,11 @@
     {
       "id": "tx_filt",
       "type": "Filter",
+      "name": "TX RF Filter",
       "x": 440,
       "y": 160,
-      "name": "TX RF Filter",
+      "w": 120,
+      "h": 80,
       "params": {
         "Type": "Bandpass",
         "Lower_Cutoff_MHz": 2350,
@@ -61,9 +69,11 @@
     {
       "id": "tx_pa",
       "type": "Amplifier",
+      "name": "Power Amp",
       "x": 640,
       "y": 160,
-      "name": "Power Amp",
+      "w": 120,
+      "h": 80,
       "params": {
         "Gain_dB": 20,
         "NF_dB": 5,
@@ -74,9 +84,11 @@
     {
       "id": "fsl",
       "type": "FreeSpaceLink",
+      "name": "Air",
       "x": 840,
       "y": 160,
-      "name": "Air",
+      "w": 120,
+      "h": 80,
       "params": {
         "Tx_Gain_dBi": 5,
         "Path_Loss_dB": 80,
@@ -86,9 +98,11 @@
     {
       "id": "rx_lna",
       "type": "Amplifier",
+      "name": "LNA",
       "x": 1040,
       "y": 160,
-      "name": "LNA",
+      "w": 120,
+      "h": 80,
       "params": {
         "Gain_dB": 15,
         "NF_dB": 2,
@@ -99,9 +113,11 @@
     {
       "id": "rx_filt",
       "type": "Filter",
+      "name": "RX RF Filter",
       "x": 1240,
       "y": 160,
-      "name": "RX RF Filter",
+      "w": 120,
+      "h": 80,
       "params": {
         "Type": "Bandpass",
         "Lower_Cutoff_MHz": 2350,
@@ -113,9 +129,11 @@
     {
       "id": "rx_lo",
       "type": "SignalSource",
-      "x": 1440,
-      "y": 40,
       "name": "RX LO",
+      "x": 1320,
+      "y": -60,
+      "w": 120,
+      "h": 80,
       "params": {
         "Frequency_MHz": 2300,
         "Power_dBm": 10,
@@ -125,9 +143,11 @@
     {
       "id": "rx_mix",
       "type": "Mixer",
+      "name": "Downconvertor",
       "x": 1440,
       "y": 160,
-      "name": "Downconvertor",
+      "w": 120,
+      "h": 80,
       "params": {
         "Type": "Downconvertor",
         "Conversion_Gain_dB": -6,
@@ -139,9 +159,11 @@
     {
       "id": "rx_if_amp",
       "type": "Amplifier",
+      "name": "IF Amp",
       "x": 1640,
       "y": 160,
-      "name": "IF Amp",
+      "w": 120,
+      "h": 80,
       "params": {
         "Gain_dB": 20,
         "NF_dB": 4,
@@ -152,9 +174,11 @@
     {
       "id": "rx_load",
       "type": "Load",
+      "name": "ADC Load",
       "x": 1840,
       "y": 160,
-      "name": "ADC Load",
+      "w": 120,
+      "h": 80,
       "params": {}
     }
   ],
@@ -170,12 +194,6 @@
       "sourcePort": "out1",
       "targetId": "tx_mix",
       "targetPort": "lo"
-    },
-    {
-      "sourceId": "tx_mix",
-      "sourcePort": "out1",
-      "targetId": "tx_filt",
-      "targetPort": "in1"
     },
     {
       "sourceId": "tx_filt",
@@ -214,15 +232,21 @@
       "targetPort": "lo"
     },
     {
-      "sourceId": "rx_mix",
-      "sourcePort": "out1",
-      "targetId": "rx_if_amp",
-      "targetPort": "in1"
-    },
-    {
       "sourceId": "rx_if_amp",
       "sourcePort": "out1",
       "targetId": "rx_load",
+      "targetPort": "in1"
+    },
+    {
+      "sourceId": "tx_mix",
+      "sourcePort": "if",
+      "targetId": "tx_filt",
+      "targetPort": "in1"
+    },
+    {
+      "sourceId": "rx_mix",
+      "sourcePort": "if",
+      "targetId": "rx_if_amp",
       "targetPort": "in1"
     }
   ]
