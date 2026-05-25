@@ -406,7 +406,19 @@ class FreeSpaceLink extends Block {
     this.outputs = [{ id: 'out1', offsetY: 40 }];
   }
   getBodyHTML() {
-    return `<span style="font-size:18px;">FSL</span>`;
+    return `<svg width="100%" height="100%" viewBox="0 0 100 40" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="max-height: 40px; display: block; margin: auto;">
+  <circle cx="10" cy="30" r="1.5" fill="currentColor" stroke="none" />
+  <path d="M 10 30 L 25 30 L 25 15" />
+  <polygon points="17,5 33,5 25,15" />
+  
+  <path d="M 40 12 Q 46 20 40 28" />
+  <path d="M 46 10 Q 54 20 46 30" />
+  <path d="M 52 8 Q 62 20 52 32" />
+  
+  <circle cx="90" cy="30" r="1.5" fill="currentColor" stroke="none" />
+  <path d="M 90 30 L 75 30 L 75 15" />
+  <polygon points="67,5 83,5 75,15" />
+</svg>`;
   }
 }
 
