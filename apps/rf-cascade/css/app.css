@@ -504,19 +504,19 @@ html, body {
 }
 
 .port--top .port-label {
+  bottom: 100%;
   left: 100%;
-  top: 50%;
-  transform: translate(4px, -50%);
+  transform: translate(4px, -4px);
 }
 
 .port--in:not(.port--top) .port-label {
   bottom: 100%;
-  left: 50%;
-  transform: translate(-50%, -2px);
+  right: 100%;
+  transform: translate(-4px, -4px);
 }
 
 .port--out .port-label {
   bottom: 100%;
-  left: 50%;
-  transform: translate(-50%, -2px);
+  left: 100%;
+  transform: translate(4px, -4px);
 }
