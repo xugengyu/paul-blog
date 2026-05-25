@@ -19,6 +19,10 @@
       <div class="app-header__title">RF Cascade Analysis</div>
       <div class="app-header__actions">
         <button id="btn-save-ws" class="app-btn">Save Workspace</button>
+        <select id="select-example" class="app-btn" style="background: var(--bg-primary); color: var(--text-primary); cursor: pointer;">
+          <option value="">Load Example...</option>
+          <option value="examples/superheterodyne.json">Super Heterodyne Link</option>
+        </select>
         <button id="btn-load-ws" class="app-btn">Load Workspace</button>
         <input type="file" id="input-load-ws" style="display:none;" accept=".json" />
         <button id="btn-clear" class="app-btn">Clear Workspace</button>

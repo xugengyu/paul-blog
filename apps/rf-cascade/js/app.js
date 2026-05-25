@@ -169,6 +169,27 @@ const App = {
       reader.readAsText(file);
       e.target.value = '';
     });
+    
+    // Load Example dropdown
+    const selectExample = document.getElementById('select-example');
+    if (selectExample) {
+      selectExample.addEventListener('change', async (e) => {
+        const url = e.target.value;
+        if (!url) return;
+        
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          window.Workspace.importWorkspace(data);
+        } catch (err) {
+          alert('Failed to load example: ' + err.message);
+        }
+        
+        // Reset dropdown to default
+        e.target.value = '';
+      });
+    }
 
     // Clear button
     document.getElementById('btn-clear').addEventListener('click', () => {
