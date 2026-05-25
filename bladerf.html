@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BladeRF 2.0 micro — Random Thoughts of a Random Guy</title>
+  <meta name="description" content="My experiences and projects with the Nuand BladeRF 2.0 micro Software Defined Radio.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-xl);
+      text-decoration: underline;
+    }
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+      margin-bottom: var(--space-2xl);
+    }
+    .spec-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+    }
+    .spec-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+    .spec-card__label {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    .spec-card__value {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: var(--space-2xs);
+    }
+    .placeholder-badge {
+      display: inline-block;
+      padding: var(--space-2xs) var(--space-sm);
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      margin-bottom: var(--space-md);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="nav" id="main-nav"></nav>
+
+  <!-- ====== Main content ====== -->
+  <main class="page-content">
+    <div class="container" style="max-width:800px">
+      <div class="fade-in">
+
+        <a href="hobby.html" class="back-link">← Back to Hobbies</a>
+
+        <div>
+          <span class="placeholder-badge">SDR Journal</span>
+        </div>
+
+        <h1 class="hero__name" style="margin-bottom: var(--space-md);">BladeRF 2.0 micro</h1>
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-2xl); font-family: var(--font-serif); font-size: var(--text-lg); line-height: 1.8;">
+          The Nuand BladeRF 2.0 micro is a 2x2 MIMO software-defined radio featuring a Cyclone V FPGA and an RF range from 47 MHz to 6 GHz. It serves as my primary workbench for advanced RF analysis, custom HDL development, and MIMO experimentation.
+        </p>
+
+        <h2 class="section__title">Hardware Specifications</h2>
+        <div class="spec-grid">
+          <div class="spec-card">
+            <div class="spec-card__label">RF Range</div>
+            <div class="spec-card__value">47 MHz - 6.0 GHz</div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-card__label">MIMO Support</div>
+            <div class="spec-card__value">2x2 Channels</div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-card__label">Sample Rate</div>
+            <div class="spec-card__value">Up to 61.44 MSPS</div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-card__label">FPGA</div>
+            <div class="spec-card__value">Altera Cyclone V</div>
+          </div>
+        </div>
+
+        <h2 class="section__title">Planned Experiments & Log</h2>
+        <p style="font-family: var(--font-serif); color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--space-lg);">
+          Detailed logs, GNU Radio flowgraphs, and custom FPGA synthesis results will be documented here. Currently planning tests for:
+        </p>
+        <ul style="font-family: var(--font-serif); color: var(--text-secondary); padding-left: var(--space-lg); line-height: 1.8; margin-bottom: var(--space-2xl);">
+          <li>FPGA-accelerated FFT offloading.</li>
+          <li>Designing a 2x2 MIMO passive radar setup.</li>
+          <li>ADS-B receiver validation under high signal density.</li>
+        </ul>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Random Thoughts of a Random Guy. Built with care.</p>
+  </footer>
+
+  <script src="js/nav.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

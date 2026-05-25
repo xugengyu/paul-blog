@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flipper Zero — Random Thoughts of a Random Guy</title>
+  <meta name="description" content="My experiences and projects with Flipper Zero Sub-GHz, RFID, and NFC.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-xl);
+      text-decoration: underline;
+    }
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+      margin-bottom: var(--space-2xl);
+    }
+    .spec-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+    }
+    .spec-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+    .spec-card__label {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    .spec-card__value {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: var(--space-2xs);
+    }
+    .placeholder-badge {
+      display: inline-block;
+      padding: var(--space-2xs) var(--space-sm);
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      margin-bottom: var(--space-md);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="nav" id="main-nav"></nav>
+
+  <!-- ====== Main content ====== -->
+  <main class="page-content">
+    <div class="container" style="max-width:800px">
+      <div class="fade-in">
+
+        <a href="hobby.html" class="back-link">← Back to Hobbies</a>
+
+        <div>
+          <span class="placeholder-badge">SDR & Hardware Journal</span>
+        </div>
+
+        <h1 class="hero__name" style="margin-bottom: var(--space-md);">Flipper Zero</h1>
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-2xl); font-family: var(--font-serif); font-size: var(--text-lg); line-height: 1.8;">
+          The Flipper Zero is a portable multi-tool for pentesters and geeks in a toy-like body. It loves researching Sub-GHz radio protocols, RFID, NFC, infrared, and hardware debugging.
+        </p>
+
+        <h2 class="section__title">Capabilities</h2>
+        <div class="spec-grid">
+          <div class="spec-card">
+            <div class="spec-card__label">Sub-GHz</div>
+            <div class="spec-card__value">300-928 MHz (CC1101)</div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-card__label">RFID & NFC</div>
+            <div class="spec-card__value">125kHz & 13.56MHz</div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-card__label">Infrared</div>
+            <div class="spec-card__value">TX/RX 38kHz</div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-card__label">GPIO Headers</div>
+            <div class="spec-card__value">For custom modules</div>
+          </div>
+        </div>
+
+        <h2 class="section__title">Planned Experiments & Log</h2>
+        <p style="font-family: var(--font-serif); color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--space-lg);">
+          Logs and walk-throughs of protocol decoding, RF signal capturing, and physical access experiments will appear here:
+        </p>
+        <ul style="font-family: var(--font-serif); color: var(--text-secondary); padding-left: var(--space-lg); line-height: 1.8; margin-bottom: var(--space-2xl);">
+          <li>Analyzing and decoding weather station telemetry.</li>
+          <li>Developing a custom external CC1101 Sub-GHz module.</li>
+          <li>Testing NFC emulation protocols with smart cards.</li>
+        </ul>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Random Thoughts of a Random Guy. Built with care.</p>
+  </footer>
+
+  <script src="js/nav.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
