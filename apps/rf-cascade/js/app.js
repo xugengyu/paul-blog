@@ -665,7 +665,7 @@ const App = {
         blockFrequencies.forEach(f => {
           mixedFreqs.push(f + loFreq);
           let diff = Math.abs(f - loFreq);
-          if (diff > 0) {
+          if (diff >= 0) {
             mixedFreqs.push(diff);
           }
         });
