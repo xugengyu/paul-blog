@@ -408,6 +408,7 @@ const App = {
       type: 'scatter',
       mode: 'lines',
       line: { color: 'rgba(54, 162, 235, 0.7)', width: 2 },
+      legendgroup: 'input',
       showlegend: false,
       hoverinfo: 'none'
     };
@@ -417,6 +418,7 @@ const App = {
       type: 'scatter',
       mode: 'markers',
       name: 'Input',
+      legendgroup: 'input',
       marker: { color: 'rgba(54, 162, 235, 1)', size: 8 }
     };
 
@@ -426,6 +428,7 @@ const App = {
       type: 'scatter',
       mode: 'lines',
       line: { color: 'rgba(255, 99, 132, 0.7)', width: 2 },
+      legendgroup: 'output',
       showlegend: false,
       hoverinfo: 'none'
     };
@@ -435,6 +438,7 @@ const App = {
       type: 'scatter',
       mode: 'markers',
       name: 'Output',
+      legendgroup: 'output',
       marker: { color: 'rgba(255, 99, 132, 1)', size: 8 }
     };
 
