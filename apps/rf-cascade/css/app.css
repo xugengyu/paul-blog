@@ -154,10 +154,7 @@ html, body {
 .workspace {
   flex: 1;
   position: relative;
-  /* Key requirement: Grid dots */
   background-color: var(--bg-primary);
-  background-image: radial-gradient(circle, #ccc 1px, transparent 1px);
-  background-size: 20px 20px;
   overflow: auto;
 }
 

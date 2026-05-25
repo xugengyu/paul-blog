@@ -790,6 +790,76 @@ const App = {
         nextBlockNF = block.params.NF_dB !== undefined ? block.params.NF_dB : 6.0;
       }
       
+      // ---- IM3 Calculation for Non-Linear Blocks ----
+      if (block.type === 'Amplifier' || block.type === 'Mixer') {
+        let blockOIP3 = block.params.OIP3_dBm !== undefined ? block.params.OIP3_dBm : (block.type === 'Amplifier' ? 30 : 15);
+        let im3Tones = new Map();
+        
+        // 2-tone IM3
+        for (let i = 0; i < outSpectrum.length; i++) {
+          for (let j = i + 1; j < outSpectrum.length; j++) {
+            let t1 = outSpectrum[i];
+            let t2 = outSpectrum[j];
+            let f1 = t1.freq; let p1 = t1.power_dBm;
+            let f2 = t2.freq; let p2 = t2.power_dBm;
+            
+            // IM3: 2f1 - f2
+            let im3_f1 = Math.abs(2 * f1 - f2);
+            let im3_p1 = 2 * p1 + p2 - 2 * blockOIP3;
+            if (im3_f1 > 0 && im3_p1 >= -120) {
+               let fk = Math.round(im3_f1 * 1e4) / 1e4;
+               im3Tones.set(fk, (im3Tones.get(fk) || 0) + Math.pow(10, im3_p1/10));
+            }
+            
+            // IM3: 2f2 - f1
+            let im3_f2 = Math.abs(2 * f2 - f1);
+            let im3_p2 = 2 * p2 + p1 - 2 * blockOIP3;
+            if (im3_f2 > 0 && im3_p2 >= -120) {
+               let fk = Math.round(im3_f2 * 1e4) / 1e4;
+               im3Tones.set(fk, (im3Tones.get(fk) || 0) + Math.pow(10, im3_p2/10));
+            }
+          }
+        }
+        
+        // 3-tone IM3
+        for (let i = 0; i < outSpectrum.length; i++) {
+          for (let j = i + 1; j < outSpectrum.length; j++) {
+            for (let k = j + 1; k < outSpectrum.length; k++) {
+              let t1 = outSpectrum[i], t2 = outSpectrum[j], t3 = outSpectrum[k];
+              let freqs = [
+                Math.abs(t1.freq + t2.freq - t3.freq),
+                Math.abs(t1.freq - t2.freq + t3.freq),
+                Math.abs(-t1.freq + t2.freq + t3.freq)
+              ];
+              let p_base = t1.power_dBm + t2.power_dBm + t3.power_dBm - 2 * blockOIP3 + 6;
+              if (p_base >= -120) {
+                let mw = Math.pow(10, p_base/10);
+                freqs.forEach(f => {
+                  if (f > 0) {
+                    let fk = Math.round(f * 1e4) / 1e4;
+                    im3Tones.set(fk, (im3Tones.get(fk) || 0) + mw);
+                  }
+                });
+              }
+            }
+          }
+        }
+        
+        // Merge into outSpectrum
+        let mergedMap = new Map();
+        outSpectrum.forEach(t => {
+           let fk = Math.round(t.freq * 1e4) / 1e4;
+           mergedMap.set(fk, (mergedMap.get(fk) || 0) + Math.pow(10, t.power_dBm/10));
+        });
+        im3Tones.forEach((mw, fk) => {
+           mergedMap.set(fk, (mergedMap.get(fk) || 0) + mw);
+        });
+        outSpectrum = Array.from(mergedMap.entries()).map(([freq, mw]) => ({ freq: Number(freq), power_dBm: 10 * Math.log10(mw) }));
+        // Sort spectrum by frequency
+        outSpectrum.sort((a, b) => a.freq - b.freq);
+      }
+      // ---- End IM3 Calculation ----
+
       block.outputSpectrum = outSpectrum;
       let power_dBm = getP(outSpectrum);
       
