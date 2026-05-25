@@ -162,6 +162,8 @@ class Block {
         if (finalVal !== undefined) {
           this.params[paramKey] = finalVal;
           this.updateParamDisplay();
+          if (this.updateBody) this.updateBody();
+          if (this.rebuildPorts) this.rebuildPorts();
           if (window.Workspace) window.Workspace.markStale();
         }
         popover.remove();
@@ -256,6 +258,13 @@ class Block {
     this.outputs.forEach(p => this.element.appendChild(renderPort(p, false)));
     
     if (window.Workspace) window.Workspace.updateWires();
+  }
+
+  updateBody() {
+    const body = this.element.querySelector('.rf-block__body');
+    if (body) {
+      body.innerHTML = this.getBodyHTML();
+    }
   }
 
   updateParamDisplay() {

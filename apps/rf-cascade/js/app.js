@@ -472,6 +472,9 @@ const App = {
       }
     });
     this.activeBlock.updateParamDisplay();
+    if (this.activeBlock.updateBody) {
+      this.activeBlock.updateBody();
+    }
     if (this.activeBlock.rebuildPorts) {
       this.activeBlock.rebuildPorts();
     }
