@@ -471,6 +471,9 @@ const App = {
         this.activeBlock.params[key] = input.value;
       }
     });
+    if (this.activeBlock.updateParamsForType) {
+      this.activeBlock.updateParamsForType();
+    }
     this.activeBlock.updateParamDisplay();
     if (this.activeBlock.updateBody) {
       this.activeBlock.updateBody();
@@ -640,6 +643,23 @@ const App = {
         nextBlockGain = -loss;
         nextBlockNF = loss;
         log += `  Loss: ${loss} dB -> Pout: ${power_dBm.toFixed(2)} dBm\n`;
+
+        let filteredFreqs = [];
+        let filterType = block.params.Type || 'Bandpass';
+        blockFrequencies.forEach(f => {
+          let pass = true;
+          if (filterType === 'Lowpass') {
+             if (f > block.params.Cutoff_Frequency_MHz) pass = false;
+          } else if (filterType === 'Highpass') {
+             if (f < block.params.Cutoff_Frequency_MHz) pass = false;
+          } else if (filterType === 'Bandpass') {
+             if (f < block.params.Lower_Cutoff_MHz || f > block.params.Upper_Cutoff_MHz) pass = false;
+          } else if (filterType === 'Bandstop') {
+             if (f > block.params.Lower_Cutoff_MHz && f < block.params.Upper_Cutoff_MHz) pass = false;
+          }
+          if (pass) filteredFreqs.push(f);
+        });
+        blockFrequencies = filteredFreqs;
       } else if (block.type === 'Combiner') {
         power_dBm -= block.params.Loss_dB;
         nextBlockGain = -block.params.Loss_dB;

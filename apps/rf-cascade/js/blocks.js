@@ -161,6 +161,7 @@ class Block {
         const finalVal = typeof this.params[paramKey] === 'string' ? valStr : (!isNaN(newVal) ? newVal : this.params[paramKey]);
         if (finalVal !== undefined) {
           this.params[paramKey] = finalVal;
+          if (this.updateParamsForType) this.updateParamsForType();
           this.updateParamDisplay();
           if (this.updateBody) this.updateBody();
           if (this.rebuildPorts) this.rebuildPorts();
@@ -423,10 +424,27 @@ class Filter extends Block {
   setupParams() {
     this.params = {
       Type: 'Bandpass',
-      Cutoff_Frequency_MHz: 1000,
+      Lower_Cutoff_MHz: 1000,
+      Upper_Cutoff_MHz: 2000,
       In_Band_Loss_dB: 1.5,
       Out_of_Band_Attenuation_dB: 30
     };
+  }
+  updateParamsForType() {
+    const type = this.params.Type || 'Bandpass';
+    if (type === 'Bandpass' || type === 'Bandstop') {
+      if (this.params.Cutoff_Frequency_MHz !== undefined) {
+        this.params.Lower_Cutoff_MHz = this.params.Cutoff_Frequency_MHz;
+        this.params.Upper_Cutoff_MHz = this.params.Cutoff_Frequency_MHz * 2;
+        delete this.params.Cutoff_Frequency_MHz;
+      }
+    } else {
+      if (this.params.Lower_Cutoff_MHz !== undefined) {
+        this.params.Cutoff_Frequency_MHz = this.params.Lower_Cutoff_MHz;
+        delete this.params.Lower_Cutoff_MHz;
+        delete this.params.Upper_Cutoff_MHz;
+      }
+    }
   }
   getBodyHTML() {
     const type = (this.params.Type || 'Bandpass').toLowerCase();
