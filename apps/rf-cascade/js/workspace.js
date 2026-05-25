@@ -768,8 +768,15 @@ const Workspace = {
     if (!portDef) return null;
     
     const w = block.element ? block.element.offsetWidth : 120;
-    const x = type === 'out' ? block.x + w : block.x;
-    const y = block.y + portDef.offsetY;
+    
+    let x, y;
+    if (portDef.align === 'top') {
+      x = block.x + w / 2;
+      y = block.y;
+    } else {
+      x = type === 'out' ? block.x + w : block.x;
+      y = block.y + portDef.offsetY;
+    }
     
     return { x, y };
   },
